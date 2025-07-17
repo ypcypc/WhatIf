@@ -1,0 +1,136 @@
+/* 引入中文字体 */
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&family=Noto+Serif+SC:wght@400;500;700&display=swap');
+
+/* 全局样式重置 */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+body {
+  font-family: 'Noto Sans SC', sans-serif;
+  background: #000;
+  color: #fff;
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* 按钮全局样式 */
+button {
+  font-family: inherit;
+  cursor: pointer;
+  outline: none;
+  border: none;
+  background: none;
+  transition: all 0.3s ease;
+}
+
+button:focus {
+  outline: 2px solid rgba(255, 176, 124, 0.5);
+  outline-offset: 2px;
+}
+
+/* 输入框全局样式 */
+input, textarea {
+  font-family: inherit;
+  outline: none;
+  border: none;
+  background: none;
+}
+
+/* 滚动条全局样式 */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 176, 124, 0.5);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 176, 124, 0.8);
+}
+
+/* 选择文本样式 */
+::selection {
+  background: rgba(255, 176, 124, 0.3);
+  color: #fff;
+}
+
+::-moz-selection {
+  background: rgba(255, 176, 124, 0.3);
+  color: #fff;
+}
+
+/* 禁用文本选择（除特定区域外） */
+.galgame-container {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+/* 允许对话文本选择 */
+.dialogue-text,
+.backlog-text {
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
+  user-select: text;
+}
+
+/* 动画性能优化 */
+* {
+  -webkit-backface-visibility: hidden;
+  -moz-backface-visibility: hidden;
+  -ms-backface-visibility: hidden;
+  backface-visibility: hidden;
+}
+
+/* 触摸设备优化 */
+@media (pointer: coarse) {
+  button {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}
+
+/* 高对比度模式支持 */
+@media (prefers-contrast: high) {
+  .status-btn,
+  .control-btn {
+    border-width: 2px;
+  }
+  
+  .dialogue-container {
+    border-width: 2px;
+  }
+}
+
+/* 减少动画（用户偏好） */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* 暗色模式支持 */
+@media (prefers-color-scheme: dark) {
+  /* Galgame 本身就是暗色主题，保持不变 */
+}

@@ -1,0 +1,24 @@
+# WhatIf Backend Service 环境变量配置模板
+# 使用方法：复制此文件的内容到 .env 文件或直接修改 start_backend.sh 脚本
+
+# OpenAI API 密钥
+OPENAI_API_KEY=your_openai_api_key_here
+
+# 服务配置
+HOST=0.0.0.0
+PORT=8000
+
+# 日志级别 (DEBUG, INFO, WARNING, ERROR)  
+LOG_LEVEL=INFO
+
+# 数据存储目录
+DATA_DIR=data/sessions
+
+# LLM 配置
+DEFAULT_MODEL=gpt-4o-mini
+DEFAULT_TEMPERATURE=0.3
+MAX_TOKENS=1000
+
+# 速率限制配置
+RATE_LIMIT_REQUESTS=30
+RATE_LIMIT_WINDOW=60 
