@@ -1,47 +1,144 @@
-# WhatIf AI Galgame
+# WhatIf AI Interactive Game Reader
 
-一个基于AI技术的交互式视觉小说游戏系统。
+An AI-powered interactive visual novel game system that provides immersive reading experiences with intelligent context understanding.
 
-## 项目概述
+## 🌟 Features
 
-WhatIf 是一个创新的 AI 驱动的视觉小说（Galgame）系统，旨在为用户提供沉浸式的互动阅读体验。系统采用微服务架构，将不同功能模块分离，确保高可维护性和可扩展性。
+- **Interactive Game Reading**: Immersive visual novel experience with AI-enhanced storytelling
+- **Anchor Context System**: Smart context tracking and reference system for complex narratives
+- **Multi-Service Architecture**: Modular backend with dedicated services for different functionalities
+- **Real-time AI Integration**: OpenAI GPT-4 powered responses and story generation
+- **Cross-Platform**: Web application with Electron desktop wrapper
+- **Session Management**: Persistent game state and progress tracking
 
-## 快速开始
+## 🚀 Quick Start
 
-### 启动后端服务
+### Prerequisites
+
+- Node.js 18+ and pnpm
+- Python 3.13+ and Poetry
+- OpenAI API key
+
+### Backend Setup
 
 ```bash
-# 使用启动脚本（推荐）
-./start_backend.sh
-
-# 或手动启动
+# Install Python dependencies
 poetry install
-poetry run python start_backend.py
+
+# Copy and configure environment
+cp config.example config
+# Edit config file with your OpenAI API key
+
+# Start backend services
+./start_backend.sh
+# or manually: poetry run python start_backend.py
 ```
 
-### 启动前端服务
+### Frontend Setup
 
 ```bash
-# 安装依赖
+# Install dependencies
 pnpm install
 
-# 启动开发服务器
+# Start development server
 pnpm dev
 ```
 
-## 技术栈
+### Desktop App (Optional)
 
-- **后端**: FastAPI + Python 3.13
-- **前端**: React + TypeScript + Vite
+```bash
+cd apps/desktop
+pnpm install
+pnpm dev
+```
+
+## 🏗️ Architecture
+
+### Backend Services
+
+- **LLM Service**: AI text generation and processing
+- **Anchor Service**: Context tracking and reference management
+- **Dictionary Service**: Term definitions and explanations
+- **Save Service**: Game state persistence
+- **Game Router**: Main game logic coordination
+
+### Frontend Components
+
+- **GameReader**: Main reading interface
+- **AnchorContextDemo**: Context visualization
+- **InteractiveGameReader**: Enhanced interactive features
+
+## 🛠️ Tech Stack
+
+### Backend
+- **Framework**: FastAPI
+- **Language**: Python 3.13
 - **AI**: OpenAI GPT-4 mini
-- **数据**: JSON + 事件流
+- **Data**: JSON-based storage with event streaming
 
-## 访问地址
+### Frontend
+- **Framework**: React 18 + TypeScript
+- **Build Tool**: Vite
+- **Styling**: Tailwind CSS
+- **State Management**: React hooks
 
-- **前端界面**: http://localhost:5173
-- **后端API**: http://localhost:8000
-- **API文档**: http://localhost:8000/docs
+### Desktop
+- **Framework**: Electron
+- **Integration**: Vite + React
 
-## 文档
+## 🌐 Access Points
 
-详细文档请参考 [docs](./docs/) 目录。
+- **Frontend**: http://localhost:5173
+- **Backend API**: http://localhost:8000
+- **API Documentation**: http://localhost:8000/docs
+- **Desktop App**: Run via Electron
+
+## 📁 Project Structure
+
+```
+whatif/
+├── src/                    # Frontend React application
+├── backend_services/       # Python FastAPI services
+├── apps/desktop/          # Electron desktop app
+├── docs/                  # Documentation
+├── data/                  # Game data and sessions
+└── public/               # Static assets
+```
+
+## 📚 Documentation
+
+Comprehensive documentation is available in the [docs](./docs/) directory:
+
+- [API Reference](./docs/api-reference.md)
+- [Frontend Guide](./docs/frontend.md)
+- [LLM Service](./docs/llm-service.md)
+- [Anchor Service](./docs/anchor-service.md)
+
+## 🔧 Configuration
+
+1. Copy `config.example` to `config`
+2. Add your OpenAI API key
+3. Adjust service ports if needed
+4. Configure CORS settings for your domain
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests if applicable
+5. Submit a pull request
+
+## 📄 License
+
+This project is open source. Please check the license file for details.
+
+## 🙏 Acknowledgments
+
+- OpenAI for GPT-4 API
+- FastAPI and React communities
+- All contributors and testers
+
+---
+
+**Note**: This is an AI-powered interactive fiction system. Ensure you have proper API keys and follow OpenAI's usage guidelines.
