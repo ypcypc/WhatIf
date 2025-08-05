@@ -6,9 +6,12 @@ The AnchorService class implements O(N) algorithm for processing anchors with
 cross-chapter handling and optional intro-patch functionality.
 """
 
+import logging
 from typing import List
 from .models import Anchor, AssembleResponse, Span, ChunkResponse, AnchorContextResponse
 from .repositories import AnchorRepository
+
+logger = logging.getLogger(__name__)
 
 
 class AnchorService:
@@ -95,8 +98,8 @@ class AnchorService:
                     ))
                 except Exception as e:
                     # Log error but continue processing
-                    print(f"Warning: Failed to get chunks for chapter {prev.chapter_id}, "
-                          f"range {span_start}-{prev.chunk_id}: {e}")
+                    logger.warning(f"Failed to get chunks for chapter {prev.chapter_id}, "
+                                  f"range {span_start}-{prev.chunk_id}: {e}")
                     
                 # Reset for new chapter
                 try:
@@ -108,8 +111,8 @@ class AnchorService:
                 except ValueError as e:
                     # If intro fails, fallback to current chunk
                     span_start = curr.chunk_id
-                    print(f"Warning: Failed to get first chunk for chapter {curr.chapter_id}, "
-                          f"using current chunk: {e}")
+                    logger.warning(f"Failed to get first chunk for chapter {curr.chapter_id}, "
+                                  f"using current chunk: {e}")
                     
             prev = curr
 
@@ -129,8 +132,8 @@ class AnchorService:
                 text=joined
             ))
         except Exception as e:
-            print(f"Warning: Failed to get chunks for final chapter {prev.chapter_id}, "
-                  f"range {span_start}-{prev.chunk_id}: {e}")
+            logger.warning(f"Failed to get chunks for final chapter {prev.chapter_id}, "
+                          f"range {span_start}-{prev.chunk_id}: {e}")
 
         return AssembleResponse(
             text="\n\n".join(parts),  # Join spans with double newline
@@ -326,6 +329,7 @@ class AnchorService:
         
         # 3. 提取从起始位置到当前锚点的所有内容
         try:
+            logger.info(f"Extracting chunks from {start_chunk_id} to {end_chunk_id}")
             chunk_texts = self.repo.get_chunks_in_range(
                 chapter_id=current_anchor.chapter_id,
                 start_id=start_chunk_id,
@@ -334,16 +338,21 @@ class AnchorService:
             if chunk_texts:
                 context_parts.extend(chunk_texts)
                 chunks_included += len(chunk_texts)
+                total_chars = sum(len(text) for text in chunk_texts)
+                logger.info(f"Extracted {chunks_included} chunks, {total_chars} characters")
+            else:
+                logger.warning(f"No chunks found in range {start_chunk_id} to {end_chunk_id}")
         except Exception as e:
-            print(f"Warning: Failed to get chunks from {start_chunk_id} to {end_chunk_id}: {e}")
+            logger.error(f"Failed to get chunks from {start_chunk_id} to {end_chunk_id}: {e}")
             # 如果范围获取失败，至少尝试获取当前锚点的内容
             try:
                 anchor_text = self.repo.get_chunk_text(current_anchor.chunk_id)
                 if anchor_text:
                     context_parts.append(anchor_text)
                     chunks_included += 1
+                    logger.info(f"Using fallback anchor text ({len(anchor_text)} chars)")
             except Exception as e2:
-                print(f"Warning: Failed to get anchor text: {e2}")
+                logger.error(f"Failed to get anchor text: {e2}")
         
         # 4. 视情况添加尾部内容
         has_tail = False
@@ -367,7 +376,7 @@ class AnchorService:
                         has_tail = True
                         chunks_included += len(tail_texts)
                 except Exception as e:
-                    print(f"Warning: Failed to get tail chunks: {e}")
+                    logger.warning(f"Failed to get tail chunks: {e}")
         
         context_text = "".join(context_parts)
         

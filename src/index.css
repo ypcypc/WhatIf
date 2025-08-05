@@ -1,6 +1,13 @@
 /* 引入中文字体 */
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&family=Noto+Serif+SC:wght@400;500;700&display=swap');
 
+/* Import advanced glass styles */
+@import './components/ui/glass-styles.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 /* 全局样式重置 */
 * {
   margin: 0;

@@ -185,6 +185,8 @@ class GenerateResponse(BaseModel):
     session_id: str = Field(..., description="Session identifier")
     generated_at: datetime = Field(default_factory=datetime.now, description="Generation timestamp")
     metadata: Dict[str, Any] = Field(default_factory=dict, description="Generation metadata")
+    deviation_reasoning: Optional[str] = Field(None, description="Reasoning about deviation level evaluation")
+    new_deviation: Optional[float] = Field(None, description="New deviation level after applying delta")
     
     class Config:
         json_schema_extra = {

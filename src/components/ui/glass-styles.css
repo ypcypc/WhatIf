@@ -1,0 +1,226 @@
+/* Advanced Glass Styles */
+
+/* 3D Tilt Transform */
+.glass-tilt {
+  transform-style: preserve-3d;
+  /* Use perspective on parent and only apply rotation transforms to preserve existing transforms */
+  transform: perspective(1000px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
+  transition: transform 0.1s ease-out;
+}
+
+/* Enhanced gradient borders with color dispersion effect */
+.glass-border-dispersion {
+  border: 1px solid transparent;
+  border-image: linear-gradient(90deg, 
+    rgba(174, 238, 255, 0.6), 
+    rgba(255, 255, 255, 0.4), 
+    rgba(255, 174, 238, 0.6)
+  ) 1;
+}
+
+/* Multiple backdrop-filter layers for enhanced depth */
+.glass-multi-blur::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  backdrop-filter: blur(8px) saturate(180%);
+  background: linear-gradient(135deg, 
+    rgba(255, 255, 255, 0.1), 
+    rgba(255, 255, 255, 0.05)
+  );
+  border-radius: inherit;
+  z-index: -1;
+}
+
+.glass-multi-blur::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  backdrop-filter: blur(16px) brightness(1.1);
+  background: radial-gradient(circle at 30% 20%, 
+    rgba(255, 255, 255, 0.15), 
+    transparent 50%
+  );
+  border-radius: inherit;
+  z-index: -2;
+}
+
+/* Dynamic light reflection */
+.glass-dynamic-light {
+  position: relative;
+  overflow: hidden;
+}
+
+.glass-dynamic-light::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    200px circle at var(--gx, 50%) var(--gy, 0%), 
+    rgba(255, 255, 255, 0.4), 
+    transparent 60%
+  );
+  border-radius: inherit;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+
+.glass-dynamic-light:hover::before {
+  opacity: 1;
+}
+
+/* Chromatic aberration edge effect */
+.glass-chromatic {
+  position: relative;
+}
+
+.glass-chromatic::after {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  background: linear-gradient(45deg, 
+    rgba(255, 0, 100, 0.1), 
+    rgba(0, 255, 255, 0.1), 
+    rgba(255, 255, 0, 0.1)
+  );
+  border-radius: inherit;
+  z-index: -1;
+  filter: blur(0.5px);
+}
+
+/* Liquid surface ripple effect */
+@keyframes ripple {
+  0% {
+    transform: scale(0.8);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(2.5);
+    opacity: 0;
+  }
+}
+
+.glass-ripple {
+  position: relative;
+  overflow: hidden;
+}
+
+.glass-ripple::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    circle at var(--ripple-x, 50%) var(--ripple-y, 50%), 
+    rgba(255, 255, 255, 0.3), 
+    transparent 40%
+  );
+  border-radius: 50%;
+  transform: scale(0);
+  pointer-events: none;
+}
+
+.glass-ripple.ripple-active::before {
+  animation: ripple 0.6s ease-out;
+}
+
+/* Iridescent color shift */
+.glass-iridescent {
+  background: linear-gradient(135deg, 
+    rgba(255, 255, 255, 0.1), 
+    rgba(255, 255, 255, 0.05)
+  );
+  position: relative;
+}
+
+.glass-iridescent::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, 
+    rgba(255, 0, 150, 0.1), 
+    rgba(0, 255, 255, 0.1), 
+    rgba(255, 255, 0, 0.1), 
+    rgba(150, 0, 255, 0.1)
+  );
+  border-radius: inherit;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  background-size: 400% 400%;
+  animation: iridescent 4s ease-in-out infinite;
+}
+
+@keyframes iridescent {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+.glass-iridescent:hover::before {
+  opacity: 0.6;
+}
+
+/* Depth layers for complex glass */
+.glass-depth-layers {
+  position: relative;
+}
+
+.glass-depth-layers::before {
+  content: '';
+  position: absolute;
+  inset: 2px;
+  background: linear-gradient(135deg, 
+    rgba(255, 255, 255, 0.2), 
+    rgba(255, 255, 255, 0.05)
+  );
+  border-radius: inherit;
+  backdrop-filter: blur(4px);
+}
+
+.glass-depth-layers::after {
+  content: '';
+  position: absolute;
+  inset: 4px;
+  background: linear-gradient(135deg, 
+    rgba(255, 255, 255, 0.1), 
+    rgba(255, 255, 255, 0.02)
+  );
+  border-radius: inherit;
+  backdrop-filter: blur(2px);
+}
+
+/* Frosted glass texture */
+.glass-frosted {
+  background-image: 
+    radial-gradient(circle at 25% 25%, rgba(255, 255, 255, 0.1) 0%, transparent 20%),
+    radial-gradient(circle at 75% 75%, rgba(255, 255, 255, 0.05) 0%, transparent 20%),
+    radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.08) 0%, transparent 30%);
+  background-size: 20px 20px, 30px 30px, 40px 40px;
+  background-position: 0 0, 10px 10px, 20px 20px;
+}
+
+/* Performance optimizations */
+.glass-optimized {
+  will-change: transform;
+  backface-visibility: hidden;
+  transform-origin: center center;
+}
+
+/* Reduced motion fallback */
+@media (prefers-reduced-motion: reduce) {
+  .glass-tilt,
+  .glass-dynamic-light,
+  .glass-ripple,
+  .glass-iridescent {
+    transform: none !important;
+    animation: none !important;
+    transition: none !important;
+  }
+  
+  .glass-tilt::before,
+  .glass-dynamic-light::before,
+  .glass-ripple::before,
+  .glass-iridescent::before {
+    opacity: 0.5 !important;
+    animation: none !important;
+  }
+}

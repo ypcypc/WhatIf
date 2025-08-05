@@ -11,7 +11,7 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000
 // === Type Definitions ===
 
 export interface ScriptUnit {
-  type: 'narration' | 'dialogue' | 'choice';
+  type: 'narration' | 'dialogue' | 'interaction';
   content: string;
   speaker?: string;
   choice_id?: string;
@@ -38,6 +38,7 @@ export interface GameStartResponse {
   script: ScriptUnit[];
   context: string;
   current_anchor: {
+    node_id: string;
     chapter_id: number;
     chunk_id: string;
   };
@@ -54,6 +55,7 @@ export interface GameTurnRequest {
   previous_anchor_index?: number;
   include_tail?: boolean;
   is_last_anchor_in_chapter?: boolean;
+  current_anchor_id?: string; // Add storyline-based anchor ID
 }
 
 export interface GameTurnResponse {
@@ -66,6 +68,9 @@ export interface GameTurnResponse {
     chapter_id: number;
     anchor_index: number;
     chunk_id: string;
+    current_anchor_id: string;
+    next_anchor_id: string | null;
+    context_stats: Record<string, any>;
   };
   generation_metadata: Record<string, any>;
 }
@@ -84,7 +89,7 @@ export interface SessionStatus {
 /**
  * Start a new game session
  */
-export async function startGame(request: GameStartRequest): Promise<GameStartResponse> {
+export async function startGame(request: GameStartRequest, signal?: AbortSignal): Promise<GameStartResponse> {
   try {
     const response = await fetch(`${API_BASE_URL}/api/v1/game/start`, {
       method: 'POST',
@@ -97,6 +102,7 @@ export async function startGame(request: GameStartRequest): Promise<GameStartRes
         chapter_id: request.chapter_id || 1,
         anchor_index: request.anchor_index || 0
       }),
+      signal, // Add abort signal support
     });
 
     if (!response.ok) {
@@ -114,7 +120,7 @@ export async function startGame(request: GameStartRequest): Promise<GameStartRes
 /**
  * Process a complete game turn
  */
-export async function processTurn(request: GameTurnRequest): Promise<GameTurnResponse> {
+export async function processTurn(request: GameTurnRequest, signal?: AbortSignal): Promise<GameTurnResponse> {
   try {
     const response = await fetch(`${API_BASE_URL}/api/v1/game/turn`, {
       method: 'POST',
@@ -122,6 +128,7 @@ export async function processTurn(request: GameTurnRequest): Promise<GameTurnRes
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(request),
+      signal, // Add abort signal support
     });
 
     if (!response.ok) {
@@ -190,12 +197,12 @@ export function generateSessionId(): string {
 export function parseScriptForRendering(script: ScriptUnit[]): {
   narrativeUnits: ScriptUnit[];
   dialogueUnits: ScriptUnit[];
-  choiceUnits: ScriptUnit[];
+  interactionUnits: ScriptUnit[];
 } {
   return {
     narrativeUnits: script.filter(unit => unit.type === 'narration'),
     dialogueUnits: script.filter(unit => unit.type === 'dialogue'),
-    choiceUnits: script.filter(unit => unit.type === 'choice')
+    interactionUnits: script.filter(unit => unit.type === 'interaction')
   };
 }
 

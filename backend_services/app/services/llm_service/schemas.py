@@ -141,7 +141,7 @@ class ChatRequest(BaseModel):
     model: Optional[str] = Field(None, description="Specific model name")
     diff_score: float = Field(0.0, description="Story deviation score")
     context: Optional[str] = Field(None, description="Additional context")
-    max_tokens: int = Field(1000, description="Maximum tokens to generate")
+    max_tokens: int = Field(8192, description="Maximum tokens to generate (controlled by llm_settings.py)")
     temperature: float = Field(0.7, description="Sampling temperature")
     stream: bool = Field(False, description="Enable streaming response")
     

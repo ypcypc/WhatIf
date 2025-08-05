@@ -273,4 +273,54 @@ class DictService:
         logger.info("Listing all glossary terms")
         
         glossary_data = await self._load_glossary_data()
-        return [term.get("id", "") for term in glossary_data.get("terms", []) if term.get("id")] 
+        return [term.get("id", "") for term in glossary_data.get("terms", []) if term.get("id")]
+    
+    async def batch_query_characters(self, character_ids: List[str], include_relationships: bool = True) -> dict:
+        """
+        Query multiple characters by their IDs in a single request.
+        
+        Args:
+            character_ids: List of character IDs to query
+            include_relationships: Whether to include relationship information
+            
+        Returns:
+            Dictionary with characters data and list of not found IDs
+        """
+        logger.info(f"Batch querying {len(character_ids)} characters")
+        
+        characters_data = await self._load_characters_data()
+        
+        # Create a lookup dict for faster access
+        all_characters = {char.get("id"): char for char in characters_data.get("characters", []) if char.get("id")}
+        
+        result_characters = {}
+        not_found = []
+        
+        for char_id in character_ids:
+            if char_id in all_characters:
+                character = all_characters[char_id]
+                char_response = CharacterResponse(
+                    id=character.get("id", ""),
+                    name=character.get("name", ""),
+                    aliases=character.get("aliases", []),
+                    race=character.get("race"),
+                    gender=character.get("gender"),
+                    debut_chapter=character.get("debut_chapter"),
+                    appearance_chapters=character.get("appearance_chapters", []),
+                    abilities=character.get("abilities", []),
+                    description=character.get("description"),
+                    relationships=character.get("relationships", {}) if include_relationships else {},
+                    is_protagonist=character.get("is_protagonist", False),
+                    created_at=character.get("created_at"),
+                    updated_at=character.get("updated_at")
+                )
+                result_characters[char_id] = char_response
+            else:
+                not_found.append(char_id)
+        
+        logger.info(f"Found {len(result_characters)} characters, {len(not_found)} not found")
+        
+        return {
+            "characters": result_characters,
+            "not_found": not_found
+        } 

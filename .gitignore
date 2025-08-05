@@ -138,6 +138,9 @@ dmypy.json
 *.key
 config
 !config.example
+llm_config.json
+api_keys.env
+.env
 
 # Session data (can be large)
 data/sessions/*.json

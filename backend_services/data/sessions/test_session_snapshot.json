@@ -1,0 +1,176 @@
+{
+  "session_id": "test_session",
+  "protagonist": "c_san_shang_wu",
+  "globals": {
+    "deviation": 0.0,
+    "affinity": {},
+    "flags": {},
+    "variables": {}
+  },
+  "summary": null,
+  "recent": [
+    {
+      "t": 1,
+      "role": "user",
+      "anchor": "a1_1",
+      "choice": "",
+      "script": null,
+      "deviation_delta": 0.0,
+      "affinity_changes": null,
+      "metadata": {
+        "session_id": "test_session",
+        "timestamp": "2025-07-24T23:39:09.334474",
+        "context_length": 21
+      }
+    },
+    {
+      "t": 1,
+      "role": "assistant",
+      "anchor": null,
+      "choice": null,
+      "script": [
+        {
+          "type": "narration",
+          "content": "测试文本：好暗。乌漆麻黑的，什么都看不见。",
+          "speaker": null,
+          "choice_id": null,
+          "default_reply": null,
+          "metadata": {}
+        },
+        {
+          "type": "narration",
+          "content": "测试文本：好暗。乌漆麻黑的，什么都看不见。",
+          "speaker": null,
+          "choice_id": null,
+          "default_reply": null,
+          "metadata": {}
+        },
+        {
+          "type": "narration",
+          "content": "测试文本：好暗。乌漆麻黑的，什么都看不见。",
+          "speaker": null,
+          "choice_id": null,
+          "default_reply": null,
+          "metadata": {}
+        },
+        {
+          "type": "narration",
+          "content": "测试文本：好暗。乌漆麻黑的，什么都看不见。",
+          "speaker": null,
+          "choice_id": null,
+          "default_reply": null,
+          "metadata": {}
+        },
+        {
+          "type": "narration",
+          "content": "测试文本：好暗。乌漆麻黑的，什么都看不见。",
+          "speaker": null,
+          "choice_id": null,
+          "default_reply": null,
+          "metadata": {}
+        },
+        {
+          "type": "narration",
+          "content": "测试文本：好暗。乌漆麻黑的，什么都看不见。",
+          "speaker": null,
+          "choice_id": null,
+          "default_reply": null,
+          "metadata": {}
+        },
+        {
+          "type": "narration",
+          "content": "测试文本：好暗。乌漆麻黑的，什么都看不见。",
+          "speaker": null,
+          "choice_id": null,
+          "default_reply": null,
+          "metadata": {}
+        },
+        {
+          "type": "narration",
+          "content": "测试文本：好暗。乌漆麻黑的，什么都看不见。",
+          "speaker": null,
+          "choice_id": null,
+          "default_reply": null,
+          "metadata": {}
+        },
+        {
+          "type": "dialogue",
+          "content": "测试文本：好暗。乌漆麻黑的，什么都看不见。",
+          "speaker": "主角",
+          "choice_id": null,
+          "default_reply": null,
+          "metadata": {}
+        },
+        {
+          "type": "dialogue",
+          "content": "测试文本：好暗。乌漆麻黑的，什么都看不见。",
+          "speaker": "主角",
+          "choice_id": null,
+          "default_reply": null,
+          "metadata": {}
+        },
+        {
+          "type": "dialogue",
+          "content": "测试文本：好暗。乌漆麻黑的，什么都看不见。",
+          "speaker": "主角",
+          "choice_id": null,
+          "default_reply": null,
+          "metadata": {}
+        },
+        {
+          "type": "dialogue",
+          "content": "测试文本：好暗。乌漆麻黑的，什么都看不见。",
+          "speaker": "主角",
+          "choice_id": null,
+          "default_reply": null,
+          "metadata": {}
+        },
+        {
+          "type": "dialogue",
+          "content": "测试文本：好暗。乌漆麻黑的，什么都看不见。",
+          "speaker": "主角",
+          "choice_id": null,
+          "default_reply": null,
+          "metadata": {}
+        },
+        {
+          "type": "dialogue",
+          "content": "测试文本：好暗。乌漆麻黑的，什么都看不见。",
+          "speaker": "主角",
+          "choice_id": null,
+          "default_reply": null,
+          "metadata": {}
+        },
+        {
+          "type": "interaction",
+          "content": "前方黑暗中隐隐出现了「测试锚点」，你打算如何行动？",
+          "speaker": null,
+          "choice_id": "choice_1",
+          "default_reply": "向前摸索",
+          "metadata": {}
+        }
+      ],
+      "deviation_delta": 0.0,
+      "affinity_changes": {},
+      "metadata": {
+        "session_id": "test_session",
+        "timestamp": "2025-07-24T23:39:09.334484",
+        "model": "o4-mini",
+        "usage": {
+          "prompt_tokens": 4868,
+          "completion_tokens": 2522,
+          "total_tokens": 7390
+        },
+        "generation_config": {
+          "temperature": 0.8,
+          "original_temperature": 0.8,
+          "deviation_level": "low",
+          "dialogue_ratio_target": "2:1"
+        }
+      }
+    }
+  ],
+  "created_at": "2025-07-24T23:39:09.332847",
+  "updated_at": "2025-07-24T23:39:35.323419",
+  "version": 1
+}

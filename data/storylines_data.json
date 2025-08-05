@@ -1,1514 +1,228 @@
 {
   "storylines": [
     {
-      "line_id": "c_san_shang_wu",
-      "title": "利姆路·坦派斯特的成长与征途",
-      "description": "讲述三上悟转生为史莱姆利姆路，逐步觉醒技能，建立势力，结识伙伴，面对挑战并立志复仇魔王雷昂的故事。",
-      "protagonist": "c_san_shang_wu",
+      "line_id": "A",
+      "title": "利姆路的成长与盟友集结",
+      "description": "以三上悟/利姆路为主角，讲述其从获得新生、获得力量、结识伙伴、建立势力、继承静的遗志并确立目标的成长历程。",
+      "protagonist": "char_001",
       "main_characters": [
-        "c_san_shang_wu",
-        "c_wei_er_de_la",
-        "c_bei_ye_te_nan_jue",
-        "c_fei_zi",
-        "c_ligelude",
-        "c_langa",
-        "c_ligelu",
-        "c_ailian",
-        "c_kainixi",
-        "c_kaijin",
-        "c_gaiza",
-        "c_peista",
-        "c_duolde",
-        "c_miluode",
-        "c_lilina",
-        "c_gebud",
-        "c_da_jie",
-        "tmp_yan_zhi_juren",
-        "tmp_fenghu_zi",
-        "tmp_shibing",
-        "tmp_goutou_ren_shang_ren",
-        "tmp_guli_hu",
-        "tmp_heiqishi"
+        "char_001",
+        "char_003",
+        "char_005",
+        "char_006",
+        "char_002"
       ],
       "nodes": [
-        "a1_1",
-        "a1_2",
-        "a1_3",
-        "a1_4",
         "a1_5",
-        "a1_6",
         "a1_7",
-        "a1_8",
-        "a1_9",
-        "a1_10",
-        "a1_13",
-        "a1_14",
-        "a3_1",
-        "a3_2",
-        "a3_3",
-        "a3_4",
-        "a3_5",
-        "a3_6",
         "a3_7",
-        "a3_8",
         "a3_9",
-        "a3_10",
         "a3_11",
-        "a3_12",
-        "a5_1",
-        "a5_2",
         "a5_3",
-        "a5_4",
         "a5_5",
-        "a5_6",
-        "a5_7",
-        "a5_8",
-        "a5_9",
-        "a5_10",
         "a7_1",
-        "a7_2",
-        "a7_3",
-        "a7_278",
-        "a7_359",
-        "a7_370",
-        "a8_1",
-        "a8_2",
-        "a8_3",
-        "a8_4",
-        "a8_5",
-        "a8_6"
-      ]
-    },
-    {
-      "line_id": "c_jing",
-      "title": "静江的挣扎与蜕变",
-      "description": "静江在困境中觉醒操焰术，遭遇魔王雷昂拒绝求助，选择焰之巨人附身，经历多次冲突与变身，最终成为爆焰支配者并隐退当教官。",
-      "protagonist": "c_jing",
-      "main_characters": [
-        "c_jing",
-        "c_leiang_keluomuweier",
-        "tmp_yan_zhi_juren",
-        "tmp_yongzhe",
-        "c_ailian",
-        "c_kabaer",
-        "c_jidu",
-        "c_haineizi"
-      ],
-      "nodes": [
-        "a2_1",
-        "a2_2",
-        "a2_3",
-        "a2_4",
-        "a2_5",
-        "a4_1",
-        "a4_2",
-        "a4_3",
-        "a4_4",
-        "a4_5",
-        "a4_6",
-        "a4_7",
-        "a4_8",
-        "a6_1",
-        "a6_2",
-        "a6_3",
-        "a6_4",
-        "a6_5",
-        "a7_5",
-        "a7_6",
-        "a7_359",
-        "a7_363",
-        "a7_370",
-        "a8_1",
-        "a8_2",
-        "a8_5"
-      ]
-    },
-    {
-      "line_id": "c_gebud",
-      "title": "哥布达的冒险与成长",
-      "description": "哥布达作为哥布林族成员，经历被骗、发明拖车、误食毒蘑菇、遭遇抢劫及被救助，最终击败孤刃虎，展现成长与勇气。",
-      "protagonist": "c_gebud",
-      "main_characters": [
-        "c_gebud",
-        "c_lilina",
-        "c_da_jie",
-        "tmp_goutou_ren_shang_ren",
-        "tmp_guli_hu",
-        "tmp_shibing"
-      ],
-      "nodes": [
-        "a8_7",
-        "a8_8",
-        "a8_9",
-        "a8_10",
-        "a8_11",
-        "a8_12",
-        "a8_13",
-        "a8_14",
-        "a8_15"
+        "a7_8",
+        "a8_1"
       ]
     }
   ],
   "nodes_detail": {
-    "a1_1": {
-      "brief": "首次面临独有技「捕食者」选择",
+    "a1_5": {
+      "brief": "接受坦派斯特命名",
+      "decision": "接受维尔德拉赐名「坦派斯特」成为命名魔物",
       "characters": [
-        "c_san_shang_wu"
-      ],
-      "type": "conflict",
-      "chapter_id": 1,
-      "impact_score": 5,
-      "prev": [],
-      "next": [
-        "a1_2"
-      ],
-      "cause": null,
-      "text_chunk_id": "ch1_23"
-    },
-    "a1_2": {
-      "brief": "确认转生成史莱姆的事实",
-      "characters": [
-        "c_san_shang_wu"
+        "char_001",
+        "char_003"
       ],
       "type": "transformation",
       "chapter_id": 1,
       "impact_score": 5,
-      "prev": [
-        "a1_1"
-      ],
-      "next": [
-        "a1_3"
-      ],
-      "cause": "首次面临独有技「捕食者」选择",
-      "text_chunk_id": "ch1_39"
-    },
-    "a1_3": {
-      "brief": "发现独有技「大贤者」的存在",
-      "characters": [
-        "c_san_shang_wu"
-      ],
-      "type": "discovery",
-      "chapter_id": 1,
-      "impact_score": 5,
-      "prev": [
-        "a1_2"
-      ],
-      "next": [
-        "a1_4"
-      ],
-      "cause": "确认转生成史莱姆的事实",
-      "text_chunk_id": "ch1_58"
-    },
-    "a1_4": {
-      "brief": "决定连结「捕食者」与「大贤者」技能",
-      "characters": [
-        "c_san_shang_wu"
-      ],
-      "type": "conflict",
-      "chapter_id": 1,
-      "impact_score": 5,
-      "prev": [
-        "a1_3"
-      ],
-      "next": [
-        "a1_5"
-      ],
-      "cause": "发现独有技「大贤者」的存在",
-      "text_chunk_id": "ch1_78"
-    },
-    "a1_5": {
-      "brief": "获得技能「水压推进」",
-      "characters": [
-        "c_san_shang_wu"
-      ],
-      "type": "discovery",
-      "chapter_id": 1,
-      "impact_score": 4,
-      "prev": [
-        "a1_4"
-      ],
-      "next": [
-        "a1_6"
-      ],
-      "cause": "决定连结「捕食者」与「大贤者」技能",
-      "text_chunk_id": "ch1_104"
-    },
-    "a1_6": {
-      "brief": "学会追加技「魔力感知」",
-      "characters": [
-        "c_san_shang_wu"
-      ],
-      "type": "discovery",
-      "chapter_id": 1,
-      "impact_score": 5,
-      "prev": [
-        "a1_5"
-      ],
+      "prev": [],
       "next": [
         "a1_7"
       ],
-      "cause": "获得技能「水压推进」",
-      "text_chunk_id": "ch1_181"
+      "cause": null,
+      "text_chunk_id": "ch1_223"
     },
     "a1_7": {
-      "brief": "首次与暴风龙维尔德拉会面",
+      "brief": "捕食并吞暴风龙维尔德拉",
+      "decision": "使用独有技「捕食者」捕食并吞下维尔德拉与其封印",
       "characters": [
-        "c_san_shang_wu",
-        "c_wei_er_de_la"
+        "char_001",
+        "char_003"
       ],
-      "type": "meeting",
+      "type": "resolution",
       "chapter_id": 1,
       "impact_score": 5,
       "prev": [
-        "a1_6"
+        "a1_5"
       ],
       "next": [
-        "a1_8"
+        "a3_7"
       ],
-      "cause": "学会追加技「魔力感知」",
-      "text_chunk_id": "ch1_188"
+      "cause": "获得坦派斯特之名后，利姆路获得力量，决定帮助维尔德拉脱困。",
+      "text_chunk_id": "ch1_257"
     },
-    "a1_8": {
-      "brief": "维尔德拉赐予主角「利姆路」之名",
+    "a3_7": {
+      "brief": "决定帮助哥布林村庄",
+      "decision": "史莱姆决定帮助哥布林村庄抵御东方魔物",
       "characters": [
-        "c_san_shang_wu",
-        "c_wei_er_de_la"
+        "char_001",
+        "char_005"
       ],
       "type": "transformation",
-      "chapter_id": 1,
+      "chapter_id": 3,
       "impact_score": 5,
       "prev": [
         "a1_7"
       ],
       "next": [
-        "a1_9"
+        "a3_9"
       ],
-      "cause": "首次与暴风龙维尔德拉会面",
-      "text_chunk_id": "ch1_224"
-    },
-    "a1_9": {
-      "brief": "决定用「捕食者」吞下维尔德拉及封印",
-      "characters": [
-        "c_san_shang_wu",
-        "c_wei_er_de_la"
-      ],
-      "type": "conflict",
-      "chapter_id": 1,
-      "impact_score": 5,
-      "prev": [
-        "a1_8"
-      ],
-      "next": [
-        "a1_10"
-      ],
-      "cause": "维尔德拉赐予主角「利姆路」之名",
-      "text_chunk_id": "ch1_253"
-    },
-    "a1_10": {
-      "brief": "成功解析「无限牢狱」封印",
-      "characters": [
-        "c_san_shang_wu",
-        "c_wei_er_de_la"
-      ],
-      "type": "resolution",
-      "chapter_id": 1,
-      "impact_score": 5,
-      "prev": [
-        "a1_9"
-      ],
-      "next": [
-        "a1_13"
-      ],
-      "cause": "决定用「捕食者」吞下维尔德拉及封印",
-      "text_chunk_id": "ch1_261"
-    },
-    "a1_11": {
-      "brief": "贝叶特男爵与费兹讨论维尔德拉消灭事件",
-      "characters": [
-        "c_bei_ye_te_nan_jue",
-        "c_fei_zi"
-      ],
-      "type": "meeting",
-      "chapter_id": 1,
-      "impact_score": 4,
-      "prev": [],
-      "next": [
-        "a1_12"
-      ],
-      "cause": null,
-      "text_chunk_id": "ch1_267"
-    },
-    "a1_12": {
-      "brief": "自由公会成员动员限制说明",
-      "characters": [
-        "c_fei_zi"
-      ],
-      "type": "discovery",
-      "chapter_id": 1,
-      "impact_score": 3,
-      "prev": [
-        "a1_11"
-      ],
-      "next": [],
-      "cause": "贝叶特男爵与费兹讨论维尔德拉消灭事件",
-      "text_chunk_id": "ch1_281"
-    },
-    "a1_13": {
-      "brief": "获得技能「水流移动」",
-      "characters": [
-        "c_san_shang_wu"
-      ],
-      "type": "discovery",
-      "chapter_id": 1,
-      "impact_score": 4,
-      "prev": [
-        "a1_10"
-      ],
-      "next": [
-        "a1_14"
-      ],
-      "cause": "成功解析「无限牢狱」封印",
-      "text_chunk_id": "ch1_317"
-    },
-    "a1_14": {
-      "brief": "获得技能「水刀」及追加技「操水术」",
-      "characters": [
-        "c_san_shang_wu"
-      ],
-      "type": "discovery",
-      "chapter_id": 1,
-      "impact_score": 5,
-      "prev": [
-        "a1_13"
-      ],
-      "next": [
-        "a3_1"
-      ],
-      "cause": "获得技能「水流移动」",
-      "text_chunk_id": "ch1_325"
-    },
-    "a2_1": {
-      "brief": "静江决定想活下去",
-      "characters": [
-        "c_jing",
-        "tmp_mother"
-      ],
-      "type": "conflict",
-      "chapter_id": 2,
-      "impact_score": 5,
-      "prev": [],
-      "next": [
-        "a2_2"
-      ],
-      "cause": null,
-      "text_chunk_id": "ch2_6"
-    },
-    "a2_2": {
-      "brief": "静江获得操焰术与火焰免疫",
-      "characters": [
-        "c_jing"
-      ],
-      "type": "transformation",
-      "chapter_id": 2,
-      "impact_score": 5,
-      "prev": [
-        "a2_1"
-      ],
-      "next": [
-        "a2_3"
-      ],
-      "cause": "静江决定想活下去",
-      "text_chunk_id": "ch2_8"
-    },
-    "a2_3": {
-      "brief": "静江遇见魔王雷昂",
-      "characters": [
-        "c_jing",
-        "c_leiang_keluomuweier"
-      ],
-      "type": "meeting",
-      "chapter_id": 2,
-      "impact_score": 4,
-      "prev": [
-        "a2_2"
-      ],
-      "next": [
-        "a2_4"
-      ],
-      "cause": "静江获得操焰术与火焰免疫",
-      "text_chunk_id": "ch2_9"
-    },
-    "a2_4": {
-      "brief": "静江向魔王求救被拒绝",
-      "characters": [
-        "c_jing",
-        "c_leiang_keluomuweier"
-      ],
-      "type": "conflict",
-      "chapter_id": 2,
-      "impact_score": 4,
-      "prev": [
-        "a2_3"
-      ],
-      "next": [
-        "a2_5"
-      ],
-      "cause": "静江遇见魔王雷昂",
-      "text_chunk_id": "ch2_16"
-    },
-    "a2_5": {
-      "brief": "静江选择让焰之巨人附身",
-      "characters": [
-        "c_jing",
-        "tmp_yan_zhi_juren"
-      ],
-      "type": "conflict",
-      "chapter_id": 2,
-      "impact_score": 5,
-      "prev": [
-        "a2_4"
-      ],
-      "next": [],
-      "cause": "静江向魔王求救被拒绝",
-      "text_chunk_id": "ch2_26"
-    },
-    "a3_1": {
-      "brief": "利姆路首次使用水刀击杀黑蛇",
-      "characters": [
-        "c_san_shang_wu"
-      ],
-      "type": "conflict",
-      "chapter_id": 3,
-      "impact_score": 5,
-      "prev": [
-        "a1_14"
-      ],
-      "next": [
-        "a3_2"
-      ],
-      "cause": "获得技能「水刀」及追加技「操水术」",
-      "text_chunk_id": "ch3_28"
-    },
-    "a3_2": {
-      "brief": "利姆路捕食黑蛇获得固有技能",
-      "characters": [
-        "c_san_shang_wu"
-      ],
-      "type": "transformation",
-      "chapter_id": 3,
-      "impact_score": 5,
-      "prev": [
-        "a3_1"
-      ],
-      "next": [
-        "a3_3"
-      ],
-      "cause": "利姆路首次使用水刀击杀黑蛇",
-      "text_chunk_id": "ch3_33"
-    },
-    "a3_3": {
-      "brief": "利姆路成功发声，开始练习说话",
-      "characters": [
-        "c_san_shang_wu"
-      ],
-      "type": "transformation",
-      "chapter_id": 3,
-      "impact_score": 4,
-      "prev": [
-        "a3_2"
-      ],
-      "next": [
-        "a3_4"
-      ],
-      "cause": "利姆路捕食黑蛇获得固有技能",
-      "text_chunk_id": "ch3_88"
-    },
-    "a3_4": {
-      "brief": "利姆路与哥布林首领首次对话",
-      "characters": [
-        "c_san_shang_wu",
-        "c_ligelude"
-      ],
-      "type": "meeting",
-      "chapter_id": 3,
-      "impact_score": 5,
-      "prev": [
-        "a3_3"
-      ],
-      "next": [
-        "a3_5"
-      ],
-      "cause": "利姆路成功发声，开始练习说话",
-      "text_chunk_id": "ch3_115"
-    },
-    "a3_5": {
-      "brief": "利姆路决定帮助哥布林村抵抗牙狼族",
-      "characters": [
-        "c_san_shang_wu",
-        "c_ligelude"
-      ],
-      "type": "resolution",
-      "chapter_id": 3,
-      "impact_score": 5,
-      "prev": [
-        "a3_4"
-      ],
-      "next": [
-        "a3_6"
-      ],
-      "cause": "利姆路与哥布林首领首次对话",
+      "cause": "利姆路获得力量后，遇到哥布林村庄的求助。",
       "text_chunk_id": "ch3_174"
     },
-    "a3_6": {
-      "brief": "利姆路斩杀牙狼族首领，确立统治",
+    "a3_9": {
+      "brief": "斩首牙狼族首领",
+      "decision": "史莱姆使用「水刀」斩首牙狼族首领",
       "characters": [
-        "c_san_shang_wu",
-        "c_langa"
+        "char_001",
+        "char_006"
       ],
       "type": "conflict",
       "chapter_id": 3,
       "impact_score": 5,
       "prev": [
-        "a3_5"
-      ],
-      "next": [
         "a3_7"
       ],
-      "cause": "利姆路决定帮助哥布林村抵抗牙狼族",
+      "next": [
+        "a3_11"
+      ],
+      "cause": "为保护哥布林村庄，利姆路与牙狼族首领战斗。",
       "text_chunk_id": "ch3_257"
     },
-    "a3_7": {
-      "brief": "利姆路获得牙狼拟态及固有技能",
-      "characters": [
-        "c_san_shang_wu",
-        "c_langa"
-      ],
-      "type": "transformation",
-      "chapter_id": 3,
-      "impact_score": 5,
-      "prev": [
-        "a3_6"
-      ],
-      "next": [
-        "a3_8"
-      ],
-      "cause": "利姆路斩杀牙狼族首领，确立统治",
-      "text_chunk_id": "ch3_264"
-    },
-    "a3_8": {
-      "brief": "利姆路为哥布林村长及成员取名",
-      "characters": [
-        "c_san_shang_wu",
-        "c_ligelude"
-      ],
-      "type": "resolution",
-      "chapter_id": 3,
-      "impact_score": 4,
-      "prev": [
-        "a3_7"
-      ],
-      "next": [
-        "a3_9"
-      ],
-      "cause": "利姆路获得牙狼拟态及固有技能",
-      "text_chunk_id": "ch3_288"
-    },
-    "a3_9": {
-      "brief": "利姆路因取名消耗魔素进入休眠",
-      "characters": [
-        "c_san_shang_wu",
-        "c_ligelude"
-      ],
-      "type": "discovery",
-      "chapter_id": 3,
-      "impact_score": 4,
-      "prev": [
-        "a3_8"
-      ],
-      "next": [
-        "a3_10"
-      ],
-      "cause": "利姆路为哥布林村长及成员取名",
-      "text_chunk_id": "ch3_301"
-    },
-    "a3_10": {
-      "brief": "哥布林与牙狼族进化，实力大增",
-      "characters": [
-        "c_san_shang_wu",
-        "c_ligelude",
-        "c_langa"
-      ],
-      "type": "transformation",
-      "chapter_id": 3,
-      "impact_score": 5,
-      "prev": [
-        "a3_9"
-      ],
-      "next": [
-        "a3_11"
-      ],
-      "cause": "利姆路因取名消耗魔素进入休眠",
-      "text_chunk_id": "ch3_323"
-    },
     "a3_11": {
-      "brief": "利姆路制定哥布林村三项生活规则",
+      "brief": "为哥布林取名",
+      "decision": "史莱姆决定为哥布林村长及村民取名字",
       "characters": [
-        "c_san_shang_wu",
-        "c_ligelude"
+        "char_001",
+        "char_005"
       ],
-      "type": "resolution",
+      "type": "transformation",
       "chapter_id": 3,
-      "impact_score": 4,
-      "prev": [
-        "a3_10"
-      ],
-      "next": [
-        "a3_12"
-      ],
-      "cause": "哥布林与牙狼族进化，实力大增",
-      "text_chunk_id": "ch3_352"
-    },
-    "a3_12": {
-      "brief": "利姆路决定前往矮人城镇寻求交易",
-      "characters": [
-        "c_san_shang_wu",
-        "c_wei_er_de_la",
-        "c_bei_ye_te_nan_jue",
-        "c_fei_zi",
-        "c_ailian",
-        "c_kainixi",
-        "c_kaijin",
-        "c_gaiza",
-        "tmp_ai_er"
-      ],
-      "type": "resolution",
-      "chapter_id": 3,
-      "impact_score": 4,
-      "prev": [
-        "a3_11"
-      ],
-      "next": [
-        "a5_1"
-      ],
-      "cause": "利姆路制定哥布林村三项生活规则",
-      "text_chunk_id": "ch3_379"
-    },
-    "a4_1": {
-      "brief": "获得独有技「异变者」保住自我",
-      "characters": [
-        "c_jing",
-        "tmp_yan_zhi_juren",
-        "c_leiang_keluomuweier"
-      ],
-      "type": "transformation",
-      "chapter_id": 4,
       "impact_score": 5,
       "prev": [
-        "a2_5"
-      ],
-      "next": [
-        "a4_2"
-      ],
-      "cause": "静江获得操焰术与火焰免疫",
-      "text_chunk_id": "ch4_3"
-    },
-    "a4_2": {
-      "brief": "魔人凯尼希入侵魔王城",
-      "characters": [
-        "c_leiang_keluomuweier",
-        "c_kainixi",
-        "c_jing"
-      ],
-      "type": "conflict",
-      "chapter_id": 4,
-      "impact_score": 5,
-      "prev": [
-        "a4_1"
-      ],
-      "next": [
-        "a4_3"
-      ],
-      "cause": "获得独有技「异变者」保住自我",
-      "text_chunk_id": "ch4_11"
-    },
-    "a4_3": {
-      "brief": "获得追加技「魔力感知」",
-      "characters": [
-        "c_jing"
-      ],
-      "type": "transformation",
-      "chapter_id": 4,
-      "impact_score": 4,
-      "prev": [
-        "a4_2"
-      ],
-      "next": [
-        "a4_4"
-      ],
-      "cause": "魔人凯尼希入侵魔王城",
-      "text_chunk_id": "ch4_12"
-    },
-    "a4_4": {
-      "brief": "用火焰杀死魔人凯尼希",
-      "characters": [
-        "c_jing",
-        "c_kainixi"
-      ],
-      "type": "conflict",
-      "chapter_id": 4,
-      "impact_score": 5,
-      "prev": [
-        "a4_3"
-      ],
-      "next": [
-        "a4_5"
-      ],
-      "cause": "获得追加技「魔力感知」",
-      "text_chunk_id": "ch4_17"
-    },
-    "a4_5": {
-      "brief": "被魔王命名为静，确立新身份",
-      "characters": [
-        "c_leiang_keluomuweier",
-        "c_jing"
-      ],
-      "type": "transformation",
-      "chapter_id": 4,
-      "impact_score": 5,
-      "prev": [
-        "a4_4"
-      ],
-      "next": [
-        "a4_6"
-      ],
-      "cause": "用火焰杀死魔人凯尼希",
-      "text_chunk_id": "ch4_25"
-    },
-    "a4_6": {
-      "brief": "学会剑术，成为剑术好手",
-      "characters": [
-        "c_jing",
-        "tmp_heiqishi"
-      ],
-      "type": "transformation",
-      "chapter_id": 4,
-      "impact_score": 4,
-      "prev": [
-        "a4_5"
-      ],
-      "next": [
-        "a4_7"
-      ],
-      "cause": "被魔王命名为静，确立新身份",
-      "text_chunk_id": "ch4_29"
-    },
-    "a4_7": {
-      "brief": "为风狐之子取名皮兹",
-      "characters": [
-        "c_jing",
-        "c_pilinuo",
-        "tmp_fenghu_zi"
-      ],
-      "type": "meeting",
-      "chapter_id": 4,
-      "impact_score": 3,
-      "prev": [
-        "a4_6"
-      ],
-      "next": [
-        "a4_8"
-      ],
-      "cause": "学会剑术，成为剑术好手",
-      "text_chunk_id": "ch4_40"
-    },
-    "a4_8": {
-      "brief": "失控烧死风狐之子皮兹和琵莉诺",
-      "characters": [
-        "c_jing",
-        "c_pilinuo",
-        "tmp_fenghu_zi",
-        "tmp_yan_zhi_juren"
-      ],
-      "type": "conflict",
-      "chapter_id": 4,
-      "impact_score": 5,
-      "prev": [
-        "a4_7"
-      ],
-      "next": [
-        "a6_1"
-      ],
-      "cause": "为风狐之子取名皮兹",
-      "text_chunk_id": "ch4_49"
-    },
-    "a5_1": {
-      "brief": "主角练习操纵蜘蛛丝技能",
-      "characters": [
-        "c_san_shang_wu"
-      ],
-      "type": "transformation",
-      "chapter_id": 5,
-      "impact_score": 4,
-      "prev": [
-        "a3_12"
-      ],
-      "next": [
-        "a5_2"
-      ],
-      "cause": "主角决定前往矮人城镇寻求交易",
-      "text_chunk_id": "ch5_5"
-    },
-    "a5_2": {
-      "brief": "主角拒绝利格鲁同行，决定单独行动",
-      "characters": [
-        "c_san_shang_wu",
-        "c_ligelu"
-      ],
-      "type": "conflict",
-      "chapter_id": 5,
-      "impact_score": 4,
-      "prev": [
-        "a5_1"
+        "a3_9"
       ],
       "next": [
         "a5_3"
       ],
-      "cause": "主角练习操纵蜘蛛丝技能",
-      "text_chunk_id": "ch5_72"
+      "cause": "击败牙狼族后，利姆路获得哥布林们的信赖，决定赐名。",
+      "text_chunk_id": "ch3_284"
     },
     "a5_3": {
-      "brief": "主角变身黑岚星狼拟态应对威胁",
+      "brief": "用回复药救助矿伤工人",
+      "decision": "决定将回复药赠予矮人矿工",
       "characters": [
-        "c_san_shang_wu"
+        "char_001",
+        "u01"
       ],
-      "type": "transformation",
+      "type": "resolution",
       "chapter_id": 5,
       "impact_score": 5,
       "prev": [
-        "a5_2"
+        "a3_11"
       ],
       "next": [
-        "a5_4"
+        "a5_5"
       ],
-      "cause": "主角拒绝利格鲁同行，决定单独行动",
-      "text_chunk_id": "ch5_96"
+      "cause": "利姆路在矮人国遇到受伤矿工，决定施以援手。",
+      "text_chunk_id": "ch5_157"
     },
-    "a5_4": {
-      "brief": "主角因骚乱被矮人警备队逮捕",
+    "a5_5": {
+      "brief": "交出魔钢块并提出建村请求",
+      "decision": "决定赠送魔钢块给凯金并请求他协助哥布林村重建",
       "characters": [
-        "c_san_shang_wu",
-        "tmp_shibing"
+        "char_001",
+        "u02"
       ],
-      "type": "conflict",
+      "type": "meeting",
       "chapter_id": 5,
-      "impact_score": 4,
+      "impact_score": 5,
       "prev": [
         "a5_3"
       ],
       "next": [
-        "a5_5"
-      ],
-      "cause": "主角变身黑岚星狼拟态应对威胁",
-      "text_chunk_id": "ch5_124"
-    },
-    "a5_5": {
-      "brief": "主角用回复药帮助矿工，赢得矮人信任",
-      "characters": [
-        "c_san_shang_wu",
-        "tmp_shibing"
-      ],
-      "type": "resolution",
-      "chapter_id": 5,
-      "impact_score": 4,
-      "prev": [
-        "a5_4"
-      ],
-      "next": [
-        "a5_6"
-      ],
-      "cause": "主角因骚乱被矮人警备队逮捕",
-      "text_chunk_id": "ch5_157"
-    },
-    "a5_6": {
-      "brief": "主角展示魔钢块，决定协助制作武器",
-      "characters": [
-        "c_san_shang_wu",
-        "c_kaijin"
-      ],
-      "type": "meeting",
-      "chapter_id": 5,
-      "impact_score": 5,
-      "prev": [
-        "a5_5"
-      ],
-      "next": [
-        "a5_7"
-      ],
-      "cause": "主角用回复药帮助矿工，赢得矮人信任",
-      "text_chunk_id": "ch5_236"
-    },
-    "a5_7": {
-      "brief": "主角用复制技能快速制作长剑",
-      "characters": [
-        "c_san_shang_wu",
-        "c_kaijin"
-      ],
-      "type": "transformation",
-      "chapter_id": 5,
-      "impact_score": 5,
-      "prev": [
-        "a5_6"
-      ],
-      "next": [
-        "a5_8"
-      ],
-      "cause": "主角展示魔钢块，决定协助制作武器",
-      "text_chunk_id": "ch5_286"
-    },
-    "a5_8": {
-      "brief": "凯金殴打大臣培斯塔，表明立场",
-      "characters": [
-        "c_kaijin",
-        "c_peista",
-        "c_san_shang_wu"
-      ],
-      "type": "conflict",
-      "chapter_id": 5,
-      "impact_score": 4,
-      "prev": [
-        "a5_7"
-      ],
-      "next": [
-        "a5_9"
-      ],
-      "cause": "主角用复制技能快速制作长剑",
-      "text_chunk_id": "ch5_307"
-    },
-    "a5_9": {
-      "brief": "矮人王盖札流放凯金及同伙",
-      "characters": [
-        "c_gaiza",
-        "c_kaijin",
-        "c_peista"
-      ],
-      "type": "resolution",
-      "chapter_id": 5,
-      "impact_score": 5,
-      "prev": [
-        "a5_8"
-      ],
-      "next": [
-        "a5_10"
-      ],
-      "cause": "凯金殴打大臣培斯塔，表明立场",
-      "text_chunk_id": "ch5_366"
-    },
-    "a5_10": {
-      "brief": "主角拟态黑岚星狼，准备出发",
-      "characters": [
-        "c_san_shang_wu",
-        "c_kaijin",
-        "c_duolde",
-        "c_miluode",
-        "c_langa"
-      ],
-      "type": "transformation",
-      "chapter_id": 5,
-      "impact_score": 4,
-      "prev": [
-        "a5_9"
-      ],
-      "next": [
         "a7_1"
       ],
-      "cause": "矮人王盖札流放凯金及同伙",
-      "text_chunk_id": "ch5_416"
-    },
-    "a6_1": {
-      "brief": "勇者赠予抗魔面具，压制焰之巨人",
-      "characters": [
-        "tmp_yongzhe",
-        "c_jing"
-      ],
-      "type": "transformation",
-      "chapter_id": 6,
-      "impact_score": 5,
-      "prev": [],
-      "next": [
-        "a6_2"
-      ],
-      "cause": null,
-      "text_chunk_id": "ch6_25"
-    },
-    "a6_2": {
-      "brief": "成为爆焰支配者，获得冒险者认可",
-      "characters": [
-        "c_jing",
-        "tmp_yongzhe"
-      ],
-      "type": "transformation",
-      "chapter_id": 6,
-      "impact_score": 5,
-      "prev": [
-        "a6_1"
-      ],
-      "next": [
-        "a6_3"
-      ],
-      "cause": "勇者赠予抗魔面具，压制焰之巨人",
-      "text_chunk_id": "ch6_41"
-    },
-    "a6_3": {
-      "brief": "勇者离去，决定变强再会",
-      "characters": [
-        "tmp_yongzhe",
-        "c_jing"
-      ],
-      "type": "resolution",
-      "chapter_id": 6,
-      "impact_score": 4,
-      "prev": [
-        "a6_2"
-      ],
-      "next": [
-        "a6_4"
-      ],
-      "cause": "成为爆焰支配者，获得冒险者认可",
-      "text_chunk_id": "ch6_47"
-    },
-    "a6_4": {
-      "brief": "唤醒焰之巨人击败灾害级魔物龙",
-      "characters": [
-        "c_jing"
-      ],
-      "type": "conflict",
-      "chapter_id": 6,
-      "impact_score": 5,
-      "prev": [
-        "a6_3"
-      ],
-      "next": [
-        "a6_5"
-      ],
-      "cause": "勇者离去，决定变强再会",
-      "text_chunk_id": "ch6_60"
-    },
-    "a6_5": {
-      "brief": "决定隐退当教官，获海因兹推荐",
-      "characters": [
-        "c_jing",
-        "c_haineizi"
-      ],
-      "type": "resolution",
-      "chapter_id": 6,
-      "impact_score": 4,
-      "prev": [
-        "a6_4"
-      ],
-      "next": [],
-      "cause": "唤醒焰之巨人击败灾害级魔物龙",
-      "text_chunk_id": "ch6_66"
+      "cause": "利姆路与矮人国建立联系，为村庄发展寻求帮助。",
+      "text_chunk_id": "ch5_235"
     },
     "a7_1": {
-      "brief": "哥布林请求成为利姆路部下",
+      "brief": "接纳来访哥布林",
+      "decision": "主角决定收编来访哥布林，吸纳他们为部下",
       "characters": [
-        "c_san_shang_wu",
-        "c_ligelude"
+        "char_001",
+        "char_005"
       ],
-      "type": "conflict",
+      "type": "transformation",
       "chapter_id": 7,
       "impact_score": 5,
       "prev": [
-        "a5_10"
+        "a5_5"
       ],
       "next": [
-        "a7_2"
+        "a7_8"
       ],
-      "cause": "主角拟态黑岚星狼，准备出发",
-      "text_chunk_id": "ch7_14"
+      "cause": "村庄壮大，利姆路继续扩充势力。",
+      "text_chunk_id": "ch7_17"
     },
-    "a7_2": {
-      "brief": "利姆路决定接纳哥布林加入",
+    "a7_8": {
+      "brief": "吸收静的诅咒",
+      "decision": "主角决定发动独有技「捕食者」吸收静的诅咒与灵魂",
       "characters": [
-        "c_san_shang_wu",
-        "c_ligelude"
+        "char_001",
+        "char_002"
       ],
-      "type": "resolution",
+      "type": "transformation",
       "chapter_id": 7,
       "impact_score": 5,
       "prev": [
         "a7_1"
       ],
       "next": [
-        "a7_3"
-      ],
-      "cause": "哥布林请求成为利姆路部下",
-      "text_chunk_id": "ch7_17"
-    },
-    "a7_3": {
-      "brief": "利姆路赐予哥布林位阶",
-      "characters": [
-        "c_san_shang_wu",
-        "c_ligelude",
-        "c_lilina",
-        "c_langa"
-      ],
-      "type": "transformation",
-      "chapter_id": 7,
-      "impact_score": 4,
-      "prev": [
-        "a7_2"
-      ],
-      "next": [
-        "a7_278"
-      ],
-      "cause": "利姆路决定接纳哥布林加入",
-      "text_chunk_id": "ch7_62"
-    },
-    "a7_278": {
-      "brief": "利姆路决定使用独有技捕食者",
-      "characters": [
-        "c_san_shang_wu"
-      ],
-      "type": "resolution",
-      "chapter_id": 7,
-      "impact_score": 5,
-      "prev": [
-        "a7_3"
-      ],
-      "next": [
-        "a7_359"
-      ],
-      "cause": "利姆路赐予哥布林位阶",
-      "text_chunk_id": "ch7_278"
-    },
-    "a7_359": {
-      "brief": "利姆路透露真名三上悟",
-      "characters": [
-        "c_san_shang_wu",
-        "c_jing"
-      ],
-      "type": "discovery",
-      "chapter_id": 7,
-      "impact_score": 4,
-      "prev": [
-        "a7_278"
-      ],
-      "next": [
-        "a7_363"
-      ],
-      "cause": "利姆路决定使用独有技捕食者",
-      "text_chunk_id": "ch7_359"
-    },
-    "a7_363": {
-      "brief": "静请求利姆路吃掉她",
-      "characters": [
-        "c_jing",
-        "c_san_shang_wu"
-      ],
-      "type": "conflict",
-      "chapter_id": 7,
-      "impact_score": 5,
-      "prev": [
-        "a7_359"
-      ],
-      "next": [
-        "a7_370"
-      ],
-      "cause": "利姆路透露真名三上悟",
-      "text_chunk_id": "ch7_363"
-    },
-    "a7_370": {
-      "brief": "利姆路誓言向魔王雷昂复仇",
-      "characters": [
-        "c_san_shang_wu",
-        "c_leiang_keluomuweier",
-        "c_jing"
-      ],
-      "type": "resolution",
-      "chapter_id": 7,
-      "impact_score": 5,
-      "prev": [
-        "a7_363"
-      ],
-      "next": [
         "a8_1"
       ],
-      "cause": "静请求利姆路吃掉她",
-      "text_chunk_id": "ch7_370"
+      "cause": "静临终前，利姆路为其解除痛苦并继承其意志。",
+      "text_chunk_id": "ch7_372"
     },
     "a8_1": {
-      "brief": "答应履行静的约定，继承技能",
+      "brief": "确立收集魔王情报的目标",
+      "decision": "决定继承静的遗志，收集魔王情报",
       "characters": [
-        "c_san_shang_wu",
-        "c_jing"
+        "char_001",
+        "char_002"
       ],
       "type": "transformation",
       "chapter_id": 8,
       "impact_score": 5,
       "prev": [
-        "a7_370"
-      ],
-      "next": [
-        "a8_2"
-      ],
-      "cause": "利姆路誓言向魔王雷昂复仇",
-      "text_chunk_id": "ch8_2"
-    },
-    "a8_2": {
-      "brief": "获得异变者和操焰术技能",
-      "characters": [
-        "c_san_shang_wu",
-        "tmp_yan_zhi_juren"
-      ],
-      "type": "transformation",
-      "chapter_id": 8,
-      "impact_score": 5,
-      "prev": [
-        "a8_1"
-      ],
-      "next": [
-        "a8_3"
-      ],
-      "cause": "答应履行静的约定，继承技能",
-      "text_chunk_id": "ch8_3"
-    },
-    "a8_3": {
-      "brief": "尝试用分身术解决拟态问题",
-      "characters": [
-        "c_san_shang_wu"
-      ],
-      "type": "resolution",
-      "chapter_id": 8,
-      "impact_score": 4,
-      "prev": [
-        "a8_2"
-      ],
-      "next": [
-        "a8_4"
-      ],
-      "cause": "获得异变者和操焰术技能",
-      "text_chunk_id": "ch8_18"
-    },
-    "a8_4": {
-      "brief": "成功施展分身术，制造分身",
-      "characters": [
-        "c_san_shang_wu"
-      ],
-      "type": "resolution",
-      "chapter_id": 8,
-      "impact_score": 4,
-      "prev": [
-        "a8_3"
-      ],
-      "next": [
-        "a8_5"
-      ],
-      "cause": "尝试用分身术解决拟态问题",
-      "text_chunk_id": "ch8_19"
-    },
-    "a8_5": {
-      "brief": "分身呈现少女外观，继承静的遗传",
-      "characters": [
-        "c_san_shang_wu",
-        "c_jing"
-      ],
-      "type": "discovery",
-      "chapter_id": 8,
-      "impact_score": 4,
-      "prev": [
-        "a8_4"
-      ],
-      "next": [
-        "a8_6"
-      ],
-      "cause": "成功施展分身术，制造分身",
-      "text_chunk_id": "ch8_20"
-    },
-    "a8_6": {
-      "brief": "决定今后以拟人形态活动",
-      "characters": [
-        "c_san_shang_wu"
-      ],
-      "type": "resolution",
-      "chapter_id": 8,
-      "impact_score": 4,
-      "prev": [
-        "a8_5"
+        "a7_8"
       ],
       "next": [],
-      "cause": "分身呈现少女外观，继承静的遗传",
-      "text_chunk_id": "ch8_42"
-    },
-    "a8_7": {
-      "brief": "哥布达被长老骗去矮人王国跑腿",
-      "characters": [
-        "c_gebud",
-        "c_lilina",
-        "tmp_goutou_ren_shang_ren"
-      ],
-      "type": "conflict",
-      "chapter_id": 8,
-      "impact_score": 5,
-      "prev": [],
-      "next": [
-        "a8_8"
-      ],
-      "cause": null,
-      "text_chunk_id": "ch8_62"
-    },
-    "a8_8": {
-      "brief": "哥布达发明拖车解决运输难题",
-      "characters": [
-        "c_gebud"
-      ],
-      "type": "resolution",
-      "chapter_id": 8,
-      "impact_score": 4,
-      "prev": [
-        "a8_7"
-      ],
-      "next": [
-        "a8_9"
-      ],
-      "cause": "哥布达被长老骗去矮人王国跑腿",
-      "text_chunk_id": "ch8_77"
-    },
-    "a8_9": {
-      "brief": "哥布达误食毒蘑菇幸免于难",
-      "characters": [
-        "c_gebud"
-      ],
-      "type": "discovery",
-      "chapter_id": 8,
-      "impact_score": 4,
-      "prev": [
-        "a8_8"
-      ],
-      "next": [
-        "a8_10"
-      ],
-      "cause": "哥布达发明拖车解决运输难题",
-      "text_chunk_id": "ch8_83"
-    },
-    "a8_10": {
-      "brief": "哥布达遭遇人类战士抢劫",
-      "characters": [
-        "c_gebud",
-        "tmp_shibing"
-      ],
-      "type": "conflict",
-      "chapter_id": 8,
-      "impact_score": 5,
-      "prev": [
-        "a8_9"
-      ],
-      "next": [
-        "a8_11"
-      ],
-      "cause": "哥布达误食毒蘑菇幸免于难",
-      "text_chunk_id": "ch8_135"
-    },
-    "a8_11": {
-      "brief": "哥布达被女哥布林战士大姊救助",
-      "characters": [
-        "c_gebud",
-        "c_da_jie"
-      ],
-      "type": "meeting",
-      "chapter_id": 8,
-      "impact_score": 4,
-      "prev": [
-        "a8_10"
-      ],
-      "next": [
-        "a8_12"
-      ],
-      "cause": "哥布达遭遇人类战士抢劫",
-      "text_chunk_id": "ch8_142"
-    },
-    "a8_12": {
-      "brief": "获得矮人制造的火焰短剑",
-      "characters": [
-        "c_gebud",
-        "tmp_goutou_ren_shang_ren"
-      ],
-      "type": "discovery",
-      "chapter_id": 8,
-      "impact_score": 4,
-      "prev": [
-        "a8_11"
-      ],
-      "next": [
-        "a8_13"
-      ],
-      "cause": "哥布达被女哥布林战士大姊救助",
-      "text_chunk_id": "ch8_154"
-    },
-    "a8_13": {
-      "brief": "用魔法筒成功击退孤刃虎",
-      "characters": [
-        "c_gebud",
-        "tmp_guli_hu"
-      ],
-      "type": "resolution",
-      "chapter_id": 8,
-      "impact_score": 5,
-      "prev": [
-        "a8_12"
-      ],
-      "next": [
-        "a8_14"
-      ],
-      "cause": "获得矮人制造的火焰短剑",
-      "text_chunk_id": "ch8_220"
-    },
-    "a8_14": {
-      "brief": "发动火焰短剑魔法攻击孤刃虎",
-      "characters": [
-        "c_gebud",
-        "tmp_guli_hu"
-      ],
-      "type": "resolution",
-      "chapter_id": 8,
-      "impact_score": 4,
-      "prev": [
-        "a8_13"
-      ],
-      "next": [
-        "a8_15"
-      ],
-      "cause": "用魔法筒成功击退孤刃虎",
-      "text_chunk_id": "ch8_233"
-    },
-    "a8_15": {
-      "brief": "孤刃虎被击败，哥布达获胜",
-      "characters": [
-        "c_gebud",
-        "tmp_guli_hu",
-        "c_da_jie"
-      ],
-      "type": "resolution",
-      "chapter_id": 8,
-      "impact_score": 5,
-      "prev": [
-        "a8_14"
-      ],
-      "next": [],
-      "cause": "发动火焰短剑魔法攻击孤刃虎",
-      "text_chunk_id": "ch8_239"
+      "cause": "吸收静的灵魂后，利姆路立下新目标。",
+      "text_chunk_id": "ch8_1"
     }
   },
-  "timeline_summary": "故事主要围绕三上悟转生为史莱姆利姆路的成长历程展开，涵盖其觉醒技能、建立势力、结识伙伴、面对敌人及复仇魔王雷昂的过程。同时，静江的故事线讲述其从困境中觉醒操焰术，经历多次变身与冲突，最终成为爆焰支配者并隐退。哥布达的故事线则展示了哥布林族成员的成长与冒险。三条故事线时间上相互交织，主线以利姆路为核心，其他两条故事线与主线有多次交集。",
-  "unknown_character_ids": [],
+  "timeline_summary": "利姆路在获得维尔德拉赐名与力量后，踏上帮助哥布林、结识伙伴、壮大势力的旅途。在与矮人国建立联系、扩充村庄后，利姆路继承静的遗志，确立了收集魔王情报的新目标，展现了其不断成长与责任感。",
+  "unknown_character_ids": [
+    "u01",
+    "u02"
+  ],
   "metadata": {
-    "extraction_method": "two_stage_anchor_extraction",
-    "total_chapters": 8,
-    "processed_chapters": 8,
-    "extraction_timestamp": "2025-07-13 23:28:13.875374",
-    "model_used": "gpt-4.1-mini",
-    "character_dict_size": 38,
-    "characters_file": "final_characters.json",
-    "anchor_count": 79
+    "fusion_method": "llm_fusion",
+    "total_storylines": 1,
+    "total_nodes": 10,
+    "unknown_characters": 2
   }
 }

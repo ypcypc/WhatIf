@@ -1,1169 +1,280 @@
 {
-  "characters": [
-    {
-      "id": "c_san_shang_wu",
-      "name": "三上悟",
-      "aliases": [
-        "三上悟",
-        "好男人",
+  "merged_characters": {
+    "char_001": {
+      "id": "char_001",
+      "canonical_name": "三上悟/利姆路",
+      "all_aliases": [
+        "我",
         "史莱姆",
-        "无名氏",
-        "利姆路·坦派斯特",
-        "和姆路·坦派斯特",
         "史莱姆利姆路",
-        "利姆路",
-        "利姆路·坦派斯",
-        "守信用的男人",
-        "异变者"
+        "利姆路大人"
       ],
-      "race": "史莱姆",
-      "gender": "男",
-      "debut_chapter": 1,
-      "appearance_chapters": [
-        1,
-        3,
-        5,
-        7,
-        8
-      ],
-      "abilities": [
+      "gender": "Male",
+      "race": "Human/Slime",
+      "titles": [],
+      "skills": [
         "捕食者",
-        "大贤者",
-        "水压推进",
-        "水流移动",
-        "水刀",
-        "操水术",
-        "魔力感知",
-        "热源感应",
-        "毒喷雾",
-        "麻痹喷雾",
-        "黏丝",
-        "钢丝",
-        "吸血",
-        "超音波",
-        "融解",
-        "吸收",
-        "自动再生",
-        "拟态",
-        "强制逃脱术",
-        "隐身术",
-        "威压",
-        "思念网",
-        "超嗅觉",
-        "独有技「异变者」",
-        "独有技「捕食者」",
-        "独有技「大贤者」",
-        "黏钢丝",
-        "热变动抗性",
-        "拟态人类",
-        "操焰术",
-        "分身术"
+        "大贤者"
       ],
-      "description": "转生为史莱姆，拥有多种强大技能和魔物能力，能拟态人类和分身",
-      "relationships": {
-        "维尔德拉": "朋友",
-        "田村": "学弟",
-        "贝叶特男爵": "未知",
-        "费兹": "未知",
-        "利格鲁德": "部下",
-        "兰加": "部下",
-        "静": "继承其执念",
-        "优树": "支持者",
-        "日向": "关心对象",
-        "妤猛": "分身",
-        "静小姐": "继承者",
-        "三上悟": "真实姓名自称"
-      },
-      "is_protagonist": true,
-      "created_at": "2025-07-13 22:41:36.264342",
-      "updated_at": "2025-07-13 22:41:36.264342"
+      "relationships": {},
+      "chapter_appearances": [
+        "1",
+        "3",
+        "5",
+        "7",
+        "8"
+      ],
+      "importance_score": 0.0,
+      "confidence": 0.95,
+      "evidence": {
+        "merge_notes": "三上悟转生为利姆路，章节中的'我'在不同上下文中指代三上悟和利姆路",
+        "confidence": 0.95,
+        "source_mentions": 0
+      }
     },
-    {
-      "id": "c_wei_er_de_la",
-      "name": "维尔德拉",
-      "aliases": [
-        "维尔德拉",
-        "暴风龙",
-        "龙",
+    "char_002": {
+      "id": "char_002",
+      "canonical_name": "井泽静江/静",
+      "all_aliases": [
+        "我",
+        "静、江"
+      ],
+      "gender": "Female",
+      "race": "Human",
+      "titles": [],
+      "skills": [],
+      "relationships": {},
+      "chapter_appearances": [
+        "2",
+        "4",
+        "7",
+        "8"
+      ],
+      "importance_score": 0.0,
+      "confidence": 0.95,
+      "evidence": {
+        "merge_notes": "井泽静江在不同章节中可能以'我'的形式出现，后被称为静",
+        "confidence": 0.95,
+        "source_mentions": 0
+      }
+    },
+    "char_003": {
+      "id": "char_003",
+      "canonical_name": "维尔德拉",
+      "all_aliases": [
         "暴风龙维尔德拉",
-        "暴风龙·维尔德拉",
-        "暴风龙维尔德拉·坦派斯特"
+        "维尔德拉",
+        "暴风龙"
       ],
-      "race": "龙",
-      "gender": "男",
-      "debut_chapter": 1,
-      "appearance_chapters": [
-        1
+      "gender": "Male",
+      "race": "Dragon",
+      "titles": [],
+      "skills": [],
+      "relationships": {},
+      "chapter_appearances": [
+        "1",
+        "3",
+        "7",
+        "8"
       ],
-      "abilities": [
-        "念力交谈",
-        "绝对切断",
-        "无限牢狱"
-      ],
-      "description": "被封印的暴风龙，拥有强大能力",
-      "relationships": {
-        "三上悟": "朋友"
-      },
-      "is_protagonist": false,
-      "created_at": "2025-07-13 22:41:36.264342",
-      "updated_at": "2025-07-13 22:41:36.264342"
+      "importance_score": 0.0,
+      "confidence": 0.95,
+      "evidence": {
+        "merge_notes": "维尔德拉被提及为暴风龙和别名",
+        "confidence": 0.95,
+        "source_mentions": 3
+      }
     },
-    {
-      "id": "c_bei_ye_te_nan_jue",
-      "name": "贝叶特男爵",
-      "aliases": [
-        "贝叶特男爵",
-        "男爵"
-      ],
-      "race": "人类",
-      "gender": "男",
-      "debut_chapter": 1,
-      "appearance_chapters": [
-        1
-      ],
-      "abilities": [],
-      "description": "小国布尔蒙的大臣",
-      "relationships": {
-        "费兹": "儿时玩伴"
-      },
-      "is_protagonist": false,
-      "created_at": "2025-07-13 22:41:36.264342",
-      "updated_at": "2025-07-13 22:41:36.264342"
-    },
-    {
-      "id": "c_fei_zi",
-      "name": "费兹",
-      "aliases": [
-        "费兹",
-        "矮子",
-        "自由公会分会长",
-        "布尔蒙自由公会分会长"
-      ],
-      "race": "人类",
-      "gender": "男",
-      "debut_chapter": 1,
-      "appearance_chapters": [
-        1,
-        7
-      ],
-      "abilities": [
-        "等级A-冒险者",
-        "秘密调查"
-      ],
-      "description": "布尔蒙王国自由公会分会长，前冒险者",
-      "relationships": {
-        "贝叶特男爵": "儿时玩伴",
-        "海因兹": "父亲",
-        "卡巴尔": "派遣的冒险者",
-        "爱莲": "派遣的冒险者",
-        "基多": "派遣的冒险者"
-      },
-      "is_protagonist": false,
-      "created_at": "2025-07-13 22:41:36.264342",
-      "updated_at": "2025-07-13 22:41:36.264342"
-    },
-    {
-      "id": "tmp_yongzhe",
-      "name": "勇者",
-      "aliases": [
-        "勇者",
-        "召唤者",
-        "少女",
-        "黑银发少女"
-      ],
-      "race": null,
-      "gender": "女",
-      "debut_chapter": 1,
-      "appearance_chapters": [
-        1,
-        6
-      ],
-      "abilities": [
-        "绝对切断",
-        "无限牢狱",
-        "高超刀术",
-        "魔法抗性"
-      ],
-      "description": "强大的召唤者，黑银发少女勇者，实力强大",
-      "relationships": {
-        "维尔德拉": "对立",
-        "静": "伙伴"
-      },
-      "is_protagonist": false,
-      "created_at": "2025-07-13 22:41:36.264342",
-      "updated_at": "2025-07-13 22:41:36.264342"
-    },
-    {
-      "id": "c_leiang_keluomuweier",
-      "name": "雷昂·克罗姆威尔",
-      "aliases": [
+    "char_004": {
+      "id": "char_004",
+      "canonical_name": "雷昂·克罗姆威尔/魔王雷昂",
+      "all_aliases": [
         "魔王",
         "白金色恶魔",
-        "雷昂·克罗姆威尔",
-        "男人",
-        "雷昂",
-        "魔王雷昂",
-        "魔王雷昂",
-        "雷昂大人"
+        "雷昂大人",
+        "雷昂"
       ],
-      "race": "人类",
-      "gender": "男",
-      "debut_chapter": 2,
-      "appearance_chapters": [
-        2,
-        4,
-        6
+      "gender": "Male",
+      "race": "Demon",
+      "titles": [
+        "魔王"
       ],
-      "abilities": [
-        "召唤术式",
-        "焰之巨人",
-        "魔王身份",
-        "统御力"
+      "skills": [],
+      "relationships": {},
+      "chapter_appearances": [
+        "2",
+        "4",
+        "6",
+        "7"
       ],
-      "description": "魔王，赐予少女肉体与力量，静的主君",
-      "relationships": {
-        "井泽静江": "被赐体者",
-        "静": "主君",
-        "黑骑士": "隶属"
-      },
-      "is_protagonist": false,
-      "created_at": "2025-07-13 22:41:36.264342",
-      "updated_at": "2025-07-13 22:41:36.264342"
+      "importance_score": 0.0,
+      "confidence": 0.95,
+      "evidence": {
+        "merge_notes": "雷昂·克罗姆威尔即魔王雷昂，章节中的'魔王'指代雷昂·克罗姆威尔",
+        "confidence": 0.95,
+        "source_mentions": 0
+      }
     },
-    {
-      "id": "tmp_mother",
-      "name": "母亲",
-      "aliases": [
-        "母亲",
-        "她"
-      ],
-      "race": "人类",
-      "gender": "女",
-      "debut_chapter": 2,
-      "appearance_chapters": [
-        2
-      ],
-      "abilities": [],
-      "description": "井泽静江的母亲，手轻柔",
-      "relationships": {
-        "井泽静江": "女儿"
-      },
-      "is_protagonist": false,
-      "created_at": "2025-07-13 22:41:36.264342",
-      "updated_at": "2025-07-13 22:41:36.264342"
-    },
-    {
-      "id": "tmp_father",
-      "name": "父亲",
-      "aliases": [
-        "父亲",
-        "他"
-      ],
-      "race": "人类",
-      "gender": "男",
-      "debut_chapter": 2,
-      "appearance_chapters": [
-        2
-      ],
-      "abilities": [],
-      "description": "井泽静江的父亲，参战中",
-      "relationships": {
-        "井泽静江": "女儿"
-      },
-      "is_protagonist": false,
-      "created_at": "2025-07-13 22:41:36.264342",
-      "updated_at": "2025-07-13 22:41:36.264342"
-    },
-    {
-      "id": "tmp_yan_zhi_juren",
-      "name": "焰之巨人",
-      "aliases": [
-        "焰之巨人",
-        "火焰怪物",
-        "焰之精灵",
-        "伊弗利特",
-        "爆焰支配者",
-        "危险的家伙"
-      ],
-      "race": "魔物",
-      "gender": null,
-      "debut_chapter": 2,
-      "appearance_chapters": [
-        2,
-        4,
-        6,
-        7,
-        8
-      ],
-      "abilities": [
-        "附身",
-        "身体控制",
-        "火焰操控",
-        "抑制宿主情感",
-        "火焰支配",
-        "焰化爆狱阵",
-        "分身",
-        "超越A级",
-        "分身术（十只）"
-      ],
-      "description": "魔王召唤的火焰巨人，附身少女，强大的火系精灵，爆焰支配者，拥有多分身能力",
-      "relationships": {
-        "雷昂·克罗姆威尔": "召唤者",
-        "静": "共生体",
-        "利姆路": "敌人",
-        "操纵者": "静",
-        "被吞噬": "三上悟"
-      },
-      "is_protagonist": false,
-      "created_at": "2025-07-13 22:41:36.264342",
-      "updated_at": "2025-07-13 22:41:36.264342"
-    },
-    {
-      "id": "c_jing",
-      "name": "静",
-      "aliases": [
-        "静",
-        "静江",
-        "焰之魔人",
-        "异变者",
-        "宿主",
-        "魔人",
-        "爆焰支配者",
-        "戴面具的孩子",
-        "女孩",
-        "魔王心腹",
-        "魔王雷昂的部属",
-        "静小姐",
-        "绝世美少女",
-        "井泽静江"
-      ],
-      "race": "魔人",
-      "gender": "女",
-      "debut_chapter": 4,
-      "appearance_chapters": [
-        2,
-        4,
-        6,
-        7,
-        8
-      ],
-      "abilities": [
-        "异变者",
-        "焰之巨人共生",
-        "魔力感知",
-        "火焰操控",
-        "操控火焰",
-        "爆裂魔法",
-        "焰之巨人能力",
-        "高超剑术",
-        "召唤魔法",
-        "焰之巨人操纵"
-      ],
-      "description": "从日本而来的转世者，被魔王雷昂当作道具利用。与焰之巨人共生的少女，魔王雷昂的亲信，高阶精灵魔人，擅长火焰与剑术，爆焰支配者，焰之巨人操纵者，三上悟继承的女性，遗传基因占大半",
-      "relationships": {
-        "魔王雷昂": "主从",
-        "黑骑士": "师徒",
-        "勇者": "伙伴",
-        "琵莉诺": "朋友",
-        "皮兹": "养护对象",
-        "海因兹": "照顾者",
-        "三上悟": "遗传基因提供者",
-        "焰之巨人": "共生体"
-      },
-      "is_protagonist": true,
-      "created_at": "2025-07-13 22:41:36.264342",
-      "updated_at": "2025-07-13 22:41:36.264342"
-    },
-    {
-      "id": "tmp_heiqishi",
-      "name": "黑骑士",
-      "aliases": [
-        "黑骑士",
-        "黑铠骑士"
-      ],
-      "race": null,
-      "gender": "男",
-      "debut_chapter": 4,
-      "appearance_chapters": [
-        4,
-        6
-      ],
-      "abilities": [
-        "剑术指导",
-        "魔王护卫",
-        "剑术锻炼"
-      ],
-      "description": "魔王雷昂的护卫，训练教练，负责锻炼静的剑术",
-      "relationships": {
-        "魔王雷昂": "隶属",
-        "静": "师徒"
-      },
-      "is_protagonist": false,
-      "created_at": "2025-07-13 22:41:36.264342",
-      "updated_at": "2025-07-13 22:41:36.264342"
-    },
-    {
-      "id": "c_kainixi",
-      "name": "凯尼希",
-      "aliases": [
-        "凯尼希",
-        "魔人凯尼希",
-        "怪人凯尼希",
-        "上级魔人"
-      ],
-      "race": "魔人",
-      "gender": "男",
-      "debut_chapter": 4,
-      "appearance_chapters": [
-        4
-      ],
-      "abilities": [
-        "魔力感知",
-        "羽翼魔力攻击"
-      ],
-      "description": "自称要取代魔王的魔人",
-      "relationships": {
-        "魔王雷昂": "对立"
-      },
-      "is_protagonist": false,
-      "created_at": "2025-07-13 22:41:36.264342",
-      "updated_at": "2025-07-13 22:41:36.264342"
-    },
-    {
-      "id": "c_pilinuo",
-      "name": "琵莉诺",
-      "aliases": [
-        "琵莉诺",
-        "少女",
-        "温和沉稳的女孩"
-      ],
-      "race": "人类",
-      "gender": "女",
-      "debut_chapter": 4,
-      "appearance_chapters": [
-        4
-      ],
-      "abilities": [],
-      "description": "静的朋友，照顾风狐幼崽",
-      "relationships": {
-        "静": "朋友",
-        "皮兹": "照顾者"
-      },
-      "is_protagonist": false,
-      "created_at": "2025-07-13 22:41:36.264342",
-      "updated_at": "2025-07-13 22:41:36.264342"
-    },
-    {
-      "id": "tmp_fenghu_zi",
-      "name": "风狐之子",
-      "aliases": [
-        "风狐的小孩",
-        "风狐之子",
-        "皮兹"
-      ],
-      "race": "魔兽",
-      "gender": null,
-      "debut_chapter": 4,
-      "appearance_chapters": [
-        4
-      ],
-      "abilities": [
-        "狩猎能力",
-        "聪明"
-      ],
-      "description": "被静和琵莉诺照顾的风狐幼崽",
-      "relationships": {
-        "静": "养护对象",
-        "琵莉诺": "养护对象"
-      },
-      "is_protagonist": false,
-      "created_at": "2025-07-13 22:41:36.264342",
-      "updated_at": "2025-07-13 22:41:36.264342"
-    },
-    {
-      "id": "c_ligelude",
-      "name": "利格鲁德",
-      "aliases": [
-        "利格鲁德",
-        "利格鲁",
-        "利格鲁德村庄的族长",
-        "哥布林王",
-        "利格鲁德村庄的族长",
-        "哥布林族长",
+    "char_005": {
+      "id": "char_005",
+      "canonical_name": "利格鲁德",
+      "all_aliases": [
+        "村长",
+        "哥布林君主",
         "哥布林王"
       ],
-      "race": "哥布林",
-      "gender": "男",
-      "debut_chapter": 5,
-      "appearance_chapters": [
-        5,
-        7
-      ],
-      "abilities": [],
-      "description": "哥布林族长，后晋升为哥布林王，带领队伍前往矮人王国",
-      "relationships": {
-        "利姆路": "主君",
-        "兰加": "部下",
-        "哥布林族长": "同僚",
-        "son": "c_ligelu"
-      },
-      "is_protagonist": false,
-      "created_at": "2025-07-13 22:41:36.264342",
-      "updated_at": "2025-07-13 22:41:36.264342"
-    },
-    {
-      "id": "c_ligelu",
-      "name": "利格鲁",
-      "aliases": [
-        "利格鲁",
-        "他",
-        "利格鲁德的儿子"
-      ],
-      "race": "哥布林",
-      "gender": "男",
-      "debut_chapter": 5,
-      "appearance_chapters": [
-        5,
-        7
-      ],
-      "abilities": [
-        "召唤黑狼"
-      ],
-      "description": "利格鲁德之子，队伍成员，尚未成功召唤黑狼",
-      "relationships": {
-        "father": "c_ligelude"
-      },
-      "is_protagonist": false,
-      "created_at": "2025-07-13 22:41:36.264342",
-      "updated_at": "2025-07-13 22:41:36.264342"
-    },
-    {
-      "id": "c_langa",
-      "name": "兰加",
-      "aliases": [
-        "兰加",
-        "黑狼",
-        "他",
-        "黑岚星狼",
-        "牙狼族新领袖",
-        "狂风之牙",
-        "岚牙",
-        "黑狼族",
-        "黑狼",
-        "黑岚星狼",
-        "黑狼族成员",
-        "黑狼"
-      ],
-      "race": "牙狼族",
-      "gender": "男",
-      "debut_chapter": 3,
-      "appearance_chapters": [
-        3,
-        5,
-        7
-      ],
-      "abilities": [
-        "超嗅觉",
-        "思念网",
-        "威压",
-        "进化",
-        "影瞬",
-        "黑色闪电"
-      ],
-      "description": "牙狼族新领袖，拥有强大力量和进化能力，黑狼族成员，能进化，队伍成员",
-      "relationships": {
-        "利姆路": "主君",
-        "利格鲁德": "同僚",
-        "牙狼族": "首领",
-        "前任首领": "子",
-        "leader": "c_wode"
-      },
-      "is_protagonist": false,
-      "created_at": "2025-07-13 22:41:36.264342",
-      "updated_at": "2025-07-13 22:41:36.264342"
-    },
-    {
-      "id": "c_gebud",
-      "name": "哥布达",
-      "aliases": [
-        "哥布达",
-        "他",
-        "徒步强者",
-        "笨蛋",
-        "哥布林",
-        "小鬼",
-        "呆头鹅",
-        "小伙子",
-        "小孩子"
-      ],
-      "race": "哥布林",
-      "gender": "男",
-      "debut_chapter": 5,
-      "appearance_chapters": [
-        5,
-        8
-      ],
-      "abilities": [
-        "召唤黑狼"
-      ],
-      "description": "队伍向导，徒步强者，笨蛋但有真本事，年轻的哥布林，经历冒险成长",
-      "relationships": {
-        "leader": "c_wode",
-        "大姊": "被照料者",
-        "狗头人商人": "交易伙伴",
-        "滚刀哥布林战士": "同伴"
-      },
-      "is_protagonist": false,
-      "created_at": "2025-07-13 22:41:36.264342",
-      "updated_at": "2025-07-13 22:41:36.264342"
-    },
-    {
-      "id": "c_kaijin",
-      "name": "凯金",
-      "aliases": [
-        "凯金",
-        "老大",
-        "武器锻造师",
-        "前王宫骑士团团长"
-      ],
-      "race": "矮人",
-      "gender": "男",
-      "debut_chapter": 5,
-      "appearance_chapters": [
-        5
-      ],
-      "abilities": [
-        "武器锻造"
-      ],
-      "description": "矮人武器锻造师，前王宫骑士团团长",
-      "relationships": {
-        "brothers": [
-          "c_gelomu",
-          "c_duolde",
-          "c_miluode"
-        ],
-        "friend": "c_wode"
-      },
-      "is_protagonist": false,
-      "created_at": "2025-07-13 22:41:36.264342",
-      "updated_at": "2025-07-13 22:41:36.264342"
-    },
-    {
-      "id": "c_gelomu",
-      "name": "葛洛姆",
-      "aliases": [
-        "葛洛姆",
-        "长男"
-      ],
-      "race": "矮人",
-      "gender": "男",
-      "debut_chapter": 5,
-      "appearance_chapters": [
-        5
-      ],
-      "abilities": [
-        "防具制作"
-      ],
-      "description": "矮人三兄弟长男，防具制作高手",
-      "relationships": {
-        "brothers": [
-          "c_kaijin",
-          "c_duolde",
-          "c_miluode"
-        ]
-      },
-      "is_protagonist": false,
-      "created_at": "2025-07-13 22:41:36.264342",
-      "updated_at": "2025-07-13 22:41:36.264342"
-    },
-    {
-      "id": "c_duolde",
-      "name": "多尔德",
-      "aliases": [
-        "多尔德",
-        "次男"
-      ],
-      "race": "矮人",
-      "gender": "男",
-      "debut_chapter": 5,
-      "appearance_chapters": [
-        5
-      ],
-      "abilities": [
-        "工艺技术"
-      ],
-      "description": "矮人三兄弟次男，工艺技术高超",
-      "relationships": {
-        "brothers": [
-          "c_kaijin",
-          "c_gelomu",
-          "c_miluode"
-        ]
-      },
-      "is_protagonist": false,
-      "created_at": "2025-07-13 22:41:36.264342",
-      "updated_at": "2025-07-13 22:41:36.264342"
-    },
-    {
-      "id": "c_miluode",
-      "name": "米鲁得",
-      "aliases": [
-        "米鲁得",
-        "三男",
-        "矮人三兄弟的三男",
-        "建设班班长"
-      ],
-      "race": "矮人",
-      "gender": "男",
-      "debut_chapter": 5,
-      "appearance_chapters": [
-        5,
-        7
-      ],
-      "abilities": [
-        "建筑",
-        "艺术",
-        "建筑知识",
-        "排泄物处理方法"
-      ],
-      "description": "矮人三兄弟三男，沉默寡言，擅长建筑与艺术，负责村庄建设与测量",
-      "relationships": {
-        "brothers": [
-          "c_kaijin",
-          "c_gelomu",
-          "c_duolde"
-        ],
-        "利姆路": "上司",
-        "利格鲁德": "同僚"
-      },
-      "is_protagonist": false,
-      "created_at": "2025-07-13 22:41:36.264342",
-      "updated_at": "2025-07-13 22:41:36.264342"
-    },
-    {
-      "id": "c_kaiduo",
-      "name": "凯多",
-      "aliases": [
-        "凯多",
-        "警备队队长"
-      ],
-      "race": "矮人",
-      "gender": "男",
-      "debut_chapter": 5,
-      "appearance_chapters": [
-        5
-      ],
-      "abilities": [
-        "警备队指挥"
-      ],
-      "description": "矮人警备队队长，帮忙带路",
-      "relationships": {
-        "friend": "c_wode"
-      },
-      "is_protagonist": false,
-      "created_at": "2025-07-13 22:41:36.264342",
-      "updated_at": "2025-07-13 22:41:36.264342"
-    },
-    {
-      "id": "c_gaiza",
-      "name": "盖札·德瓦岗",
-      "aliases": [
-        "盖札",
-        "德瓦岗",
-        "矮人王",
-        "英雄王",
+      "gender": "Male",
+      "race": "Goblin",
+      "titles": [
+        "村长",
+        "君主",
         "王"
       ],
-      "race": "矮人",
-      "gender": "男",
-      "debut_chapter": 5,
-      "appearance_chapters": [
-        5
+      "skills": [],
+      "relationships": {},
+      "chapter_appearances": [
+        "3",
+        "5",
+        "7"
       ],
-      "abilities": [
-        "统治矮人王国"
-      ],
-      "description": "现任矮人王，贤王，军事大国德瓦岗统治者",
-      "relationships": {
-        "臣下": [
-          "c_kaijin",
-          "c_peista"
-        ]
-      },
-      "is_protagonist": false,
-      "created_at": "2025-07-13 22:41:36.264342",
-      "updated_at": "2025-07-13 22:41:36.264342"
+      "importance_score": 0.0,
+      "confidence": 0.95,
+      "evidence": {
+        "merge_notes": "利格鲁德在不同章节中被称为村长、哥布林君主、哥布林王",
+        "confidence": 0.95,
+        "source_mentions": 3
+      }
     },
-    {
-      "id": "c_peista",
-      "name": "培斯塔",
-      "aliases": [
-        "培斯塔",
-        "大臣",
-        "侯爵",
-        "代理人"
+    "char_006": {
+      "id": "char_006",
+      "canonical_name": "兰加",
+      "all_aliases": [
+        "牙狼族首领"
       ],
-      "race": "矮人",
-      "gender": "男",
-      "debut_chapter": 5,
-      "appearance_chapters": [
-        5
+      "gender": "Male",
+      "race": "Wolf",
+      "titles": [
+        "族首领"
       ],
-      "abilities": [
-        "政治阴谋"
+      "skills": [],
+      "relationships": {},
+      "chapter_appearances": [
+        "3",
+        "5",
+        "7",
+        "8"
       ],
-      "description": "矮人国大臣，阴谋家，敌对凯金",
-      "relationships": {
-        "对立": [
-          "c_kaijin"
-        ]
-      },
-      "is_protagonist": false,
-      "created_at": "2025-07-13 22:41:36.264342",
-      "updated_at": "2025-07-13 22:41:36.264342"
+      "importance_score": 0.0,
+      "confidence": 0.95,
+      "evidence": {
+        "merge_notes": "兰加被提及为牙狼族首领",
+        "confidence": 0.95,
+        "source_mentions": 4
+      }
     },
-    {
-      "id": "tmp_shibing",
-      "name": "士兵",
-      "aliases": [
-        "士兵",
-        "警备队士兵",
-        "队长",
-        "士兵大哥"
+    "char_007": {
+      "id": "char_007",
+      "canonical_name": "焰之巨人/伊弗利特",
+      "all_aliases": [
+        "他",
+        "火属性高阶精灵"
       ],
-      "race": null,
-      "gender": "男",
-      "debut_chapter": 5,
-      "appearance_chapters": [
-        5
+      "gender": "Male",
+      "race": "Elemental Spirit",
+      "titles": [],
+      "skills": [],
+      "relationships": {},
+      "chapter_appearances": [
+        "4",
+        "6",
+        "8"
       ],
-      "abilities": [
-        "警备",
-        "调查"
-      ],
-      "description": "矮人士兵，负责警备与调查",
-      "relationships": {
-        "上级": "c_kaiduo"
-      },
-      "is_protagonist": false,
-      "created_at": "2025-07-13 22:41:36.264342",
-      "updated_at": "2025-07-13 22:41:36.264342"
+      "importance_score": 0.0,
+      "confidence": 0.95,
+      "evidence": {
+        "merge_notes": "焰之巨人也被称为伊弗利特，是火属性高阶精灵",
+        "confidence": 0.95,
+        "source_mentions": 0
+      }
     },
-    {
-      "id": "tmp_maoxianzhe_wurenzu",
-      "name": "冒险者五人组",
-      "aliases": [
-        "五人组",
-        "冒险者",
-        "自由公会成员"
+    "char_008": {
+      "id": "char_008",
+      "canonical_name": "费兹",
+      "all_aliases": [
+        "布尔蒙自由公会分会长"
       ],
-      "race": null,
-      "gender": null,
-      "debut_chapter": 5,
-      "appearance_chapters": [
-        5
+      "gender": "Male",
+      "race": "Human",
+      "titles": [
+        "分会长"
       ],
-      "abilities": [],
-      "description": "矮人国自由公会冒险者，惹事者",
-      "relationships": {
-        "对立": [
-          "c_wode"
-        ]
-      },
-      "is_protagonist": false,
-      "created_at": "2025-07-13 22:41:36.264342",
-      "updated_at": "2025-07-13 22:41:36.264342"
+      "skills": [],
+      "relationships": {},
+      "chapter_appearances": [
+        "1",
+        "7"
+      ],
+      "importance_score": 0.0,
+      "confidence": 0.95,
+      "evidence": {
+        "merge_notes": "费兹被提及为布尔蒙自由公会分会长",
+        "confidence": 0.95,
+        "source_mentions": 2
+      }
     },
-    {
-      "id": "tmp_heilang",
-      "name": "黑狼",
-      "aliases": [
-        "黑狼",
-        "黑岚星狼",
-        "拟态形态"
+    "char_009": {
+      "id": "char_009",
+      "canonical_name": "卡巴尔",
+      "all_aliases": [
+        "先生",
+        "重战士"
       ],
-      "race": "魔物",
-      "gender": null,
-      "debut_chapter": 5,
-      "appearance_chapters": [
-        5
+      "gender": "Male",
+      "race": "Human",
+      "titles": [
+        "重战士"
       ],
-      "abilities": [
-        "拟态",
-        "黑色闪电",
-        "威压",
-        "影瞬"
+      "skills": [],
+      "relationships": {},
+      "chapter_appearances": [
+        "3",
+        "7"
       ],
-      "description": "主角拟态形态，强大魔物",
-      "relationships": {
-        "拟态者": "c_wode"
-      },
-      "is_protagonist": false,
-      "created_at": "2025-07-13 22:41:36.264342",
-      "updated_at": "2025-07-13 22:41:36.264342"
+      "importance_score": 0.0,
+      "confidence": 0.95,
+      "evidence": {
+        "merge_notes": "卡巴尔被称为先生，职业是重战士",
+        "confidence": 0.95,
+        "source_mentions": 2
+      }
     },
-    {
-      "id": "c_kabaer",
-      "name": "卡巴尔",
-      "aliases": [
-        "卡巴尔",
-        "重战士",
-        "队长"
+    "char_010": {
+      "id": "char_010",
+      "canonical_name": "哥布达",
+      "all_aliases": [
+        "他"
       ],
-      "race": "人类",
-      "gender": "男",
-      "debut_chapter": 7,
-      "appearance_chapters": [
-        7
+      "gender": "Male",
+      "race": "Goblin",
+      "titles": [],
+      "skills": [],
+      "relationships": {},
+      "chapter_appearances": [
+        "5",
+        "8"
       ],
-      "abilities": [
-        "防御力优异",
-        "斗气防壁"
-      ],
-      "description": "B级冒险者，重战士，队伍坦克",
-      "relationships": {
-        "费兹": "派遣者",
-        "爱莲": "队友",
-        "基多": "队友",
-        "静": "同伴"
-      },
-      "is_protagonist": false,
-      "created_at": "2025-07-13 22:41:36.264342",
-      "updated_at": "2025-07-13 22:41:36.264342"
-    },
-    {
-      "id": "c_ailian",
-      "name": "爱莲",
-      "aliases": [
-        "爱莲",
-        "法术师"
-      ],
-      "race": "人类",
-      "gender": "女",
-      "debut_chapter": 7,
-      "appearance_chapters": [
-        7
-      ],
-      "abilities": [
-        "移动类魔法",
-        "水冰大魔枪",
-        "特殊魔法"
-      ],
-      "description": "B级冒险者，擅长魔法，队伍魔法输出",
-      "relationships": {
-        "费兹": "派遣者",
-        "卡巴尔": "队友",
-        "基多": "队友",
-        "静": "同伴"
-      },
-      "is_protagonist": false,
-      "created_at": "2025-07-13 22:41:36.264342",
-      "updated_at": "2025-07-13 22:41:36.264342"
-    },
-    {
-      "id": "c_jidu",
-      "name": "基多",
-      "aliases": [
-        "基多",
-        "盗贼"
-      ],
-      "race": "人类",
-      "gender": "男",
-      "debut_chapter": 7,
-      "appearance_chapters": [
-        7
-      ],
-      "abilities": [
-        "隐密行动",
-        "情报收集"
-      ],
-      "description": "B级冒险者，盗贼，队伍情报员",
-      "relationships": {
-        "费兹": "派遣者",
-        "卡巴尔": "队友",
-        "爱莲": "队友",
-        "静": "同伴"
-      },
-      "is_protagonist": false,
-      "created_at": "2025-07-13 22:41:36.264342",
-      "updated_at": "2025-07-13 22:41:36.264342"
-    },
-    {
-      "id": "c_haineizi",
-      "name": "海因兹",
-      "aliases": [
-        "海因兹先生"
-      ],
-      "race": "人类",
-      "gender": "男",
-      "debut_chapter": 7,
-      "appearance_chapters": [
-        6,
-        7
-      ],
-      "abilities": [],
-      "description": "布尔蒙自由公会前分会长，费兹之父，冒险者互助会负责人，静的照顾者",
-      "relationships": {
-        "费兹": "儿子",
-        "静": "照顾者"
-      },
-      "is_protagonist": false,
-      "created_at": "2025-07-13 22:41:36.264342",
-      "updated_at": "2025-07-13 22:41:36.264342"
-    },
-    {
-      "id": "c_lilina",
-      "name": "莉莉娜",
-      "aliases": [
-        "莉莉娜",
-        "女性族长"
-      ],
-      "race": "哥布林",
-      "gender": "女",
-      "debut_chapter": 7,
-      "appearance_chapters": [
-        7
-      ],
-      "abilities": [],
-      "description": "女性族长，进化后性别明显",
-      "relationships": {
-        "利格鲁德": "同僚",
-        "利姆路": "主君"
-      },
-      "is_protagonist": false,
-      "created_at": "2025-07-13 22:41:36.264342",
-      "updated_at": "2025-07-13 22:41:36.264342"
-    },
-    {
-      "id": "tmp_gun_dao_ge_bu_lin",
-      "name": "滚刀哥布林",
-      "aliases": [
-        "滚刀哥布林",
-        "进化哥布林",
-        "大鬼族",
-        "滚刀哥布林战士",
-        "战士"
-      ],
-      "race": "哥布林",
-      "gender": "男",
-      "debut_chapter": 7,
-      "appearance_chapters": [
-        7,
-        8
-      ],
-      "abilities": [],
-      "description": "进化后的哥布林，智力和力量提升，哥布林战士，护卫商队",
-      "relationships": {
-        "利姆路": "主君",
-        "大姊": "同伴",
-        "狗头人商人": "同伴"
-      },
-      "is_protagonist": false,
-      "created_at": "2025-07-13 22:41:36.264342",
-      "updated_at": "2025-07-13 22:41:36.264342"
-    },
-    {
-      "id": "c_da_jie",
-      "name": "大姊",
-      "aliases": [
-        "大姊",
-        "红发哥布莉娜",
-        "哥布莉娜战士",
-        "仙女"
-      ],
-      "race": "哥布林",
-      "gender": "女",
-      "debut_chapter": 8,
-      "appearance_chapters": [
-        8
-      ],
-      "abilities": [],
-      "description": "高阶哥布林战士，照料哥布达",
-      "relationships": {
-        "哥布达": "照料者",
-        "滚刀哥布林战士": "同伴",
-        "狗头人商队": "护卫"
-      },
-      "is_protagonist": false,
-      "created_at": "2025-07-13 22:41:36.264342",
-      "updated_at": "2025-07-13 22:41:36.264342"
-    },
-    {
-      "id": "tmp_guli_hu",
-      "name": "孤刃虎",
-      "aliases": [
-        "孤刃虎",
-        "密林王者",
-        "魔兽"
-      ],
-      "race": "魔兽",
-      "gender": null,
-      "debut_chapter": 8,
-      "appearance_chapters": [
-        8
-      ],
-      "abilities": [
-        "震声炮"
-      ],
-      "description": "B级魔兽，强大且危险",
-      "relationships": {
-        "哥布达": "敌对"
-      },
-      "is_protagonist": false,
-      "created_at": "2025-07-13 22:41:36.264342",
-      "updated_at": "2025-07-13 22:41:36.264342"
-    },
-    {
-      "id": "tmp_goutou_ren_shang_ren",
-      "name": "狗头人商人",
-      "aliases": [
-        "狗头人商人",
-        "商人"
-      ],
-      "race": "狗头人",
-      "gender": "男",
-      "debut_chapter": 8,
-      "appearance_chapters": [
-        8
-      ],
-      "abilities": [],
-      "description": "商队成员，帮助哥布达交易",
-      "relationships": {
-        "哥布达": "交易伙伴",
-        "哥布莉娜战士": "同伴"
-      },
-      "is_protagonist": false,
-      "created_at": "2025-07-13 22:41:36.264342",
-      "updated_at": "2025-07-13 22:41:36.264342"
-    },
-    {
-      "id": "tmp_ai_er",
-      "name": "矮人",
-      "aliases": [
-        "矮人",
-        "矮人国人",
-        "矮人王国制造者"
-      ],
-      "race": "矮人",
-      "gender": null,
-      "debut_chapter": 8,
-      "appearance_chapters": [
-        8
-      ],
-      "abilities": [],
-      "description": "矮人王国居民，制造魔法武具",
-      "relationships": {
-        "哥布达": "交易对象"
-      },
-      "is_protagonist": false,
-      "created_at": "2025-07-13 22:41:36.264342",
-      "updated_at": "2025-07-13 22:41:36.264342"
+      "importance_score": 0.0,
+      "confidence": 0.95,
+      "evidence": {
+        "merge_notes": "哥布达在不同章节中被提及",
+        "confidence": 0.95,
+        "source_mentions": 2
+      }
     }
-  ],
+  },
   "metadata": {
-    "extraction_method": "per_chapter_with_llm_merge",
-    "total_chapters": 8,
-    "extraction_timestamp": "2025-07-13 22:41:36.268773",
-    "model_used": "gpt-4.1-mini"
+    "total_characters": 10,
+    "merge_timestamp": 1753260962.931923,
+    "merge_method": "llm_alias_resolution"
   }
 }

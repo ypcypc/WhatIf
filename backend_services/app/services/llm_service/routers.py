@@ -349,6 +349,189 @@ async def health_check(
         )
 
 
+@router.post(
+    "/debug-content-tests",
+    summary="Debug content tests",
+    description="Run progressive content tests to diagnose 500 errors and content filtering issues"
+)
+async def debug_content_tests(llm_service: LLMService = Depends(get_llm_service)):
+    """
+    运行内容调试测试，用于诊断Gemini API 500错误
+    
+    这个端点会运行一系列渐进式测试：
+    1. 简单英文内容
+    2. 简单日文内容  
+    3. 短的游戏内容
+    4. 包含敏感关键词的内容
+    5. 中等长度的游戏内容
+    
+    用于找到触发500错误或内容过滤的具体原因
+    """
+    try:
+        # 获取LLM provider来运行测试
+        provider = llm_service.llm_repo.provider
+        
+        if hasattr(provider, 'run_progressive_content_tests'):
+            logger.info("Starting debug content tests...")
+            test_results = await provider.run_progressive_content_tests()
+            
+            return {
+                "status": "completed",
+                "timestamp": "2025-07-31",
+                "test_results": test_results,
+                "summary": {
+                    "total_tests": len(test_results),
+                    "passed": sum(1 for r in test_results.values() if r.get("success")),
+                    "failed": sum(1 for r in test_results.values() if not r.get("success"))
+                }
+            }
+        else:
+            return {
+                "status": "error",
+                "message": "Debug content tests not available for current provider"
+            }
+            
+    except Exception as e:
+        logger.error(f"Debug content tests failed: {e}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Debug tests failed: {str(e)}"
+        )
+
+
+@router.post(
+    "/test-simplified-generation",
+    summary="Test simplified script generation", 
+    description="Test script generation with simplified content to avoid 500 errors"
+)
+async def test_simplified_generation(
+    content: str = "我变成了史莱姆，遇到了一只友善的龙。我们决定成为朋友。",
+    max_units: int = 3,
+    target_length: int = 1000,
+    llm_service: LLMService = Depends(get_llm_service)
+):
+    """
+    测试简化的脚本生成
+    
+    使用简化的输入和格式要求，测试是否能避免Gemini API的500错误
+    """
+    try:
+        provider = llm_service.llm_repo.provider
+        
+        if hasattr(provider, 'generate_simplified_script'):
+            logger.info(f"Testing simplified generation with content length: {len(content)}")
+            
+            result = await provider.generate_simplified_script(
+                simplified_content=content,
+                max_units=max_units,
+                target_length=target_length
+            )
+            
+            return {
+                "status": "completed",
+                "input_length": len(content),
+                "max_units": max_units,
+                "target_length": target_length,
+                "result": result
+            }
+        else:
+            return {
+                "status": "error", 
+                "message": "Simplified generation not available for current provider"
+            }
+            
+    except Exception as e:
+        logger.error(f"Simplified generation test failed: {e}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Simplified generation test failed: {str(e)}"
+        )
+
+
+@router.get(
+    "/debug-current-config",
+    summary="Debug current LLM configuration",
+    description="Show exactly which provider and model are currently being used"
+)
+async def debug_current_config(llm_service: LLMService = Depends(get_llm_service)):
+    """
+    调试当前LLM配置，显示实际使用的provider和model
+    
+    这个端点会显示：
+    1. 环境变量设置
+    2. 统一配置文件内容
+    3. 实际使用的provider和model
+    4. 配置加载路径
+    """
+    try:
+        import os
+        from backend_services.app.core.config import load_unified_config
+        
+        # 获取环境变量
+        env_vars = {
+            "LLM_PROVIDER": os.getenv("LLM_PROVIDER"),
+            "LLM_MODEL": os.getenv("LLM_MODEL"),
+            "GOOGLE_API_KEY": "***" + os.getenv("GOOGLE_API_KEY", "")[-4:] if os.getenv("GOOGLE_API_KEY") else None,
+            "OPENAI_API_KEY": "***" + os.getenv("OPENAI_API_KEY", "")[-4:] if os.getenv("OPENAI_API_KEY") else None,
+        }
+        
+        # 获取统一配置
+        try:
+            unified_config = load_unified_config()
+            llm_provider_config = unified_config.get("llm_provider", {})
+        except Exception as e:
+            unified_config = {"error": str(e)}
+            llm_provider_config = {}
+        
+        # 获取当前实际使用的provider信息
+        provider = llm_service.llm_repo.provider
+        current_provider_info = {
+            "provider_type": type(provider).__name__,
+            "model_name": getattr(provider, 'model_name', 'Unknown'),
+            "config": {
+                "provider": getattr(provider.config, 'provider', 'Unknown') if hasattr(provider, 'config') else 'Unknown',
+                "model_name": getattr(provider.config, 'model_name', 'Unknown') if hasattr(provider, 'config') else 'Unknown',
+                "temperature": getattr(provider.config, 'temperature', 'Unknown') if hasattr(provider, 'config') else 'Unknown',
+            }
+        }
+        
+        # 获取LangChain模型的实际配置
+        model_info = {}
+        if hasattr(provider, 'model'):
+            model = provider.model
+            model_info = {
+                "model_class": type(model).__name__,
+                "model_attribute": getattr(model, 'model', 'Unknown'),
+                "temperature": getattr(model, 'temperature', 'Unknown'),
+                "max_output_tokens": getattr(model, 'max_output_tokens', 'Unknown'),
+            }
+        
+        return {
+            "status": "success",
+            "timestamp": "2025-07-31T15:30:00Z",
+            "environment_variables": env_vars,
+            "unified_config": {
+                "default_provider": llm_provider_config.get("default_provider"),
+                "default_model": llm_provider_config.get("default_model"),
+                "providers": llm_provider_config.get("providers", {})
+            },
+            "current_provider": current_provider_info,
+            "langchain_model": model_info,
+            "diagnosis": {
+                "expected_model": "gemini-2.5-flash",
+                "actual_model": getattr(provider.config, 'model_name', 'Unknown') if hasattr(provider, 'config') else 'Unknown',
+                "model_match": (getattr(provider.config, 'model_name', '') == 'gemini-2.5-flash') if hasattr(provider, 'config') else False
+            }
+        }
+        
+    except Exception as e:
+        logger.error(f"Debug config failed: {e}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Debug config failed: {str(e)}"
+        )
+
+
 @router.get(
     "/status",
     summary="Service status",

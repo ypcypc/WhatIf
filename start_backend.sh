@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # WhatIf Backend Service 启动脚本
-# 自动设置环境变量和启动后端服务
+# 支持统一配置文件 (llm_config.json) 和多 LLM 提供商
 
 set -e  # 遇到错误时退出
 
@@ -41,6 +41,13 @@ check_directory() {
         exit 1
     fi
     
+    if [[ ! -f "llm_config.json" ]]; then
+        print_error "未找到统一配置文件 llm_config.json！"
+        print_info "请创建配置文件或从模板复制："
+        print_info "  cp llm_config.json.example llm_config.json"
+        exit 1
+    fi
+    
     print_success "项目目录检查通过"
 }
 
@@ -67,34 +74,70 @@ check_python() {
     fi
 }
 
-# 设置环境变量
-setup_environment() {
-    print_info "设置环境变量..."
+# 检查统一配置文件
+check_unified_config() {
+    print_info "检查统一配置文件..."
     
-    # 检查配置文件是否存在
-    if [[ ! -f "config" ]]; then
-        print_error "配置文件 'config' 未找到！"
-        print_info "请复制 config.example 到 config 并填入您的 OpenAI API Key："
-        print_info "  cp config.example config"
-        print_info "  # 然后编辑 config 文件添加您的 API Key"
+    if [[ ! -f "llm_config.json" ]]; then
+        print_error "统一配置文件 'llm_config.json' 未找到！"
+        print_info "请创建配置文件："
+        print_info "  1. 从模板复制: cp llm_config.json.example llm_config.json"
+        print_info "  2. 或手动创建配置文件"
         exit 1
     fi
     
-    # 从配置文件读取API Key（如果存在）
-    if [[ -f "config" ]] && grep -q "OPENAI_API_KEY" config; then
-        source config
-        print_success "从配置文件加载 API Key"
-    fi
-    
-    # 检查API Key是否设置
-    if [[ -z "$OPENAI_API_KEY" ]]; then
-        print_error "OPENAI_API_KEY 未设置！"
-        print_info "请在 config 文件中设置您的 OpenAI API Key："
-        print_info "  echo 'export OPENAI_API_KEY=\"your-api-key-here\"' >> config"
+    # 检查配置文件是否是有效的JSON
+    if ! python3 -c "import json; json.load(open('llm_config.json'))" 2>/dev/null; then
+        print_error "llm_config.json 不是有效的JSON格式！"
+        print_info "请检查配置文件语法"
         exit 1
     fi
     
-    print_success "环境变量设置完成"
+    # 提取配置信息
+    eval $(python3 -c "
+import json
+config = json.load(open('llm_config.json'))
+provider = config.get('llm_provider', {})
+api_keys = config.get('api_keys', {})
+
+print(f'DEFAULT_PROVIDER=\"{provider.get(\"default_provider\", \"\")}\"')
+print(f'DEFAULT_MODEL=\"{provider.get(\"default_model\", \"\")}\"')
+print(f'OPENAI_API_KEY=\"{api_keys.get(\"openai_api_key\", \"\")}\"')
+print(f'GOOGLE_API_KEY=\"{api_keys.get(\"google_api_key\", \"\")}\"')
+print(f'ANTHROPIC_API_KEY=\"{api_keys.get(\"anthropic_api_key\", \"\")}\"')
+")
+    
+    print_success "配置文件格式检查通过"
+    print_info "当前LLM提供商: $DEFAULT_PROVIDER"
+    print_info "当前模型: $DEFAULT_MODEL"
+    
+    # 检查对应提供商的API密钥
+    case "$DEFAULT_PROVIDER" in
+        "openai")
+            if [[ -z "$OPENAI_API_KEY" ]]; then
+                print_warning "OpenAI API Key 未设置！请在 llm_config.json 中添加 api_keys.openai_api_key"
+            else
+                print_success "OpenAI API Key 已配置"
+            fi
+            ;;
+        "gemini")
+            if [[ -z "$GOOGLE_API_KEY" ]]; then
+                print_warning "Google API Key 未设置！请在 llm_config.json 中添加 api_keys.google_api_key"
+            else
+                print_success "Google API Key 已配置"
+            fi
+            ;;
+        "anthropic")
+            if [[ -z "$ANTHROPIC_API_KEY" ]]; then
+                print_warning "Anthropic API Key 未设置！请在 llm_config.json 中添加 api_keys.anthropic_api_key"
+            else
+                print_success "Anthropic API Key 已配置"
+            fi
+            ;;
+        *)
+            print_warning "未知的LLM提供商: $DEFAULT_PROVIDER"
+            ;;
+    esac
 }
 
 # 检查端口是否被占用
@@ -120,6 +163,9 @@ check_port() {
 start_service() {
     print_info "启动 WhatIf Backend Service..."
     print_info "服务将在 http://localhost:8000 启动"
+    print_info "使用 LLM 提供商: $DEFAULT_PROVIDER ($DEFAULT_MODEL)"
+    print_info "统一配置文件: llm_config.json"
+    print_info "记忆系统: 现代化 LangGraph 架构"
     print_info "按 Ctrl+C 停止服务"
     echo ""
     
@@ -137,6 +183,67 @@ cleanup() {
 # 设置信号处理
 trap cleanup SIGINT SIGTERM
 
+# 显示配置信息
+show_config_info() {
+    print_info "WhatIf Backend Service 配置信息"
+    echo "================================"
+    
+    if [[ ! -f "llm_config.json" ]]; then
+        print_error "配置文件 llm_config.json 不存在！"
+        return 1
+    fi
+    
+    python3 -c "
+import json
+from datetime import datetime
+
+try:
+    config = json.load(open('llm_config.json'))
+    
+    print('📋 LLM 提供商配置:')
+    provider = config.get('llm_provider', {})
+    print(f'  默认提供商: {provider.get(\"default_provider\", \"未设置\")}')
+    print(f'  默认模型: {provider.get(\"default_model\", \"未设置\")}')
+    
+    providers = provider.get('providers', {})
+    for prov_name, prov_config in providers.items():
+        print(f'  {prov_name.upper()}: {prov_config.get(\"models\", [])}')
+    
+    print()
+    print('🔑 API 密钥状态:')
+    api_keys = config.get('api_keys', {})
+    for key_name, key_value in api_keys.items():
+        status = '✓ 已配置' if key_value else '✗ 未配置'
+        masked_key = key_value[:8] + '...' + key_value[-4:] if key_value and len(key_value) > 12 else '未设置'
+        print(f'  {key_name}: {status} ({masked_key})')
+    
+    print()
+    print('⚙️  生成设置:')
+    gen_settings = config.get('generation_settings', {})
+    print(f'  默认温度: {gen_settings.get(\"default_temperature\", \"未设置\")}')
+    print(f'  最大Token: {gen_settings.get(\"max_tokens\", \"未设置\")}')
+    
+    memory_settings = gen_settings.get('memory_settings', {})
+    print(f'  最大最近事件: {memory_settings.get(\"max_recent_events\", \"未设置\")}')
+    print(f'  快照最大大小: {memory_settings.get(\"max_snapshot_size\", \"未设置\")} bytes')
+    
+    print()
+    print('📂 数据路径:')
+    data_paths = config.get('data_paths', {})
+    for path_name, path_value in data_paths.items():
+        print(f'  {path_name}: {path_value}')
+    
+    print()
+    print('🌐 应用设置:')
+    app_config = config.get('application', {})
+    print(f'  端口: {app_config.get(\"port\", \"未设置\")}')
+    print(f'  调试模式: {app_config.get(\"debug\", \"未设置\")}')
+    
+except Exception as e:
+    print(f'❌ 读取配置文件失败: {e}')
+"
+}
+
 # 显示帮助信息
 show_help() {
     echo "WhatIf Backend Service 启动脚本"
@@ -144,14 +251,22 @@ show_help() {
     echo "用法: $0 [选项]"
     echo ""
     echo "选项:"
-    echo "  -h, --help     显示此帮助信息"
-    echo "  -p, --port     指定端口号 (默认: 8000)"
-    echo "  --no-check     跳过环境检查"
+    echo "  -h, --help       显示此帮助信息"
+    echo "  -p, --port       指定端口号 (默认: 8000)"
+    echo "  --no-check       跳过环境检查"
+    echo "  --config-info    显示当前配置信息"
+    echo ""
+    echo "功能:"
+    echo "  - 支持多 LLM 提供商 (OpenAI, Gemini, Anthropic)"
+    echo "  - 统一配置文件 (llm_config.json)"
+    echo "  - 现代化记忆管理系统"
+    echo "  - 智能锚点处理和三步法生成"
     echo ""
     echo "示例:"
-    echo "  $0              # 使用默认设置启动"
-    echo "  $0 -p 8080      # 在端口8080启动"
-    echo "  $0 --no-check   # 跳过环境检查直接启动"
+    echo "  $0                 # 使用默认设置启动"
+    echo "  $0 -p 8080         # 在端口8080启动"
+    echo "  $0 --no-check      # 跳过环境检查直接启动"
+    echo "  $0 --config-info   # 显示配置信息"
 }
 
 # 主函数
@@ -174,6 +289,10 @@ main() {
                 skip_check=true
                 shift
                 ;;
+            --config-info)
+                show_config_info
+                exit 0
+                ;;
             *)
                 print_error "未知选项: $1"
                 show_help
@@ -190,11 +309,9 @@ main() {
         check_directory
         check_poetry
         check_python
+        check_unified_config
         check_port $port
     fi
-    
-    # 设置环境
-    setup_environment
     
     echo "================================"
     print_success "环境检查完成，准备启动服务..."

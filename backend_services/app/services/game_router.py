@@ -26,6 +26,9 @@ from .anchor_service.models import Anchor, AnchorContextRequest
 from .llm_service.services import LLMService
 from .llm_service.models import GenerateRequest, GenerateResponse
 
+from .dict_service.services import DictService
+from .dict_service.schemas import BatchCharacterRequest, BatchCharacterResponse
+
 from pydantic import BaseModel, Field
 from backend_services.app.core.utils import get_data_file_path
 
@@ -54,6 +57,7 @@ class GameTurnRequest(BaseModel):
     previous_anchor_index: Optional[int] = Field(None, description="Previous anchor index for context")
     include_tail: bool = Field(default=False, description="Include chapter tail if last anchor")
     is_last_anchor_in_chapter: bool = Field(default=False, description="Is this the last anchor in chapter")
+    current_anchor_id: Optional[str] = Field(None, description="Current anchor ID (e.g., 'a1_5') for storyline progression")
 
 
 class GameStartResponse(BaseModel):
@@ -94,6 +98,12 @@ def get_llm_service() -> LLMService:
 
 
 @lru_cache(maxsize=1)
+def get_dict_service() -> DictService:
+    """Get Dictionary service instance (cached)."""
+    return DictService()
+
+
+@lru_cache(maxsize=1)
 def get_storylines_data() -> Dict[str, Any]:
     """Get storylines data (cached)."""
     try:
@@ -105,23 +115,56 @@ def get_storylines_data() -> Dict[str, Any]:
         return {"storylines": [], "nodes_detail": {}}
 
 
+@lru_cache(maxsize=1)
+def get_characters_data() -> Dict[str, Any]:
+    """Get characters data (cached)."""
+    try:
+        characters_path = get_data_file_path("characters_data.json")
+        with open(characters_path, 'r', encoding='utf-8') as f:
+            return json.load(f)
+    except Exception as e:
+        logger.error(f"Failed to load characters data: {e}")
+        return {"merged_characters": {}, "metadata": {}}
+
+
+def convert_protagonist_id(protagonist: str) -> str:
+    """Convert protagonist ID to character ID format used in storylines."""
+    # Map frontend protagonist IDs to storyline character IDs
+    protagonist_mapping = {
+        "c_san_shang_wu": "char_001",  # 三上悟/利姆路
+        # Add more mappings as needed
+    }
+    return protagonist_mapping.get(protagonist, protagonist)
+
+
 def get_next_anchor_index(current_anchor_id: str, protagonist: str = "c_san_shang_wu") -> Optional[str]:
     """Get the next anchor index based on storylines data."""
     try:
         storylines = get_storylines_data()
+        # Convert protagonist ID to storyline format
+        storyline_protagonist = convert_protagonist_id(protagonist)
+        logger.debug(f"Looking for next anchor after {current_anchor_id} for protagonist {protagonist} (mapped to {storyline_protagonist})")
         
         # Find the storyline for the protagonist
         for storyline in storylines.get("storylines", []):
-            if storyline.get("protagonist") == protagonist:
+            if storyline.get("protagonist") == storyline_protagonist:
                 nodes = storyline.get("nodes", [])
+                logger.debug(f"Found storyline with {len(nodes)} nodes: {nodes}")
                 
                 # Find current anchor in the nodes list
                 try:
                     current_index = nodes.index(current_anchor_id)
+                    logger.debug(f"Found {current_anchor_id} at index {current_index}")
                     if current_index + 1 < len(nodes):
-                        return nodes[current_index + 1]
+                        next_anchor = nodes[current_index + 1]
+                        logger.info(f"Next anchor: {current_anchor_id} -> {next_anchor}")
+                        return next_anchor
+                    else:
+                        logger.info(f"Reached end of storyline at {current_anchor_id}")
+                        return None
                 except ValueError:
                     # Current anchor not found in this storyline
+                    logger.debug(f"Anchor {current_anchor_id} not found in nodes list")
                     continue
         
         logger.warning(f"No next anchor found for {current_anchor_id} in storyline {protagonist}")
@@ -164,18 +207,41 @@ def get_chunk_id_from_anchor(anchor_id: str) -> str:
 
 
 def get_anchor_info(anchor_id: str) -> Dict[str, Any]:
-    """Get detailed anchor information including brief and type."""
+    """Get detailed anchor information including brief and type with character resolution."""
     try:
         storylines = get_storylines_data()
+        characters = get_characters_data()
         nodes_detail = storylines.get("nodes_detail", {})
+        merged_characters = characters.get("merged_characters", {})
         
         if anchor_id in nodes_detail:
             anchor_detail = nodes_detail[anchor_id]
+            
+            # Resolve character IDs to character names
+            character_ids = anchor_detail.get("characters", [])
+            resolved_characters = []
+            for char_id in character_ids:
+                if char_id in merged_characters:
+                    char_data = merged_characters[char_id]
+                    resolved_characters.append({
+                        "id": char_id,
+                        "name": char_data.get("canonical_name", "Unknown"),
+                        "aliases": char_data.get("all_aliases", [])
+                    })
+                else:
+                    # Handle unknown character IDs
+                    resolved_characters.append({
+                        "id": char_id,
+                        "name": f"Unknown_{char_id}",
+                        "aliases": []
+                    })
+            
             return {
                 "anchor_id": anchor_id,
                 "brief": anchor_detail.get("brief", ""),
                 "type": anchor_detail.get("type", ""),
-                "characters": anchor_detail.get("characters", []),
+                "characters": resolved_characters,
+                "character_ids": character_ids,  # Keep original IDs for backward compatibility
                 "impact_score": anchor_detail.get("impact_score", 0),
                 "text_chunk_id": anchor_detail.get("text_chunk_id", f"ch{anchor_id[1:]}")
             }
@@ -186,6 +252,7 @@ def get_anchor_info(anchor_id: str) -> Dict[str, Any]:
             "brief": "",
             "type": "unknown",
             "characters": [],
+            "character_ids": [],
             "impact_score": 0,
             "text_chunk_id": f"ch{anchor_id[1:]}"
         }
@@ -197,6 +264,7 @@ def get_anchor_info(anchor_id: str) -> Dict[str, Any]:
             "brief": "",
             "type": "unknown",
             "characters": [],
+            "character_ids": [],
             "impact_score": 0,
             "text_chunk_id": f"ch{anchor_id[1:]}"
         }
@@ -242,13 +310,36 @@ async def start_game(
         # 1. Create session in LLM service
         snapshot = await llm_service.create_session(request.session_id, request.protagonist)
         
-        # 2. Get initial anchor from data
-        initial_anchor_id = f"a{request.chapter_id}_{request.anchor_index + 1}"
+        # 2. Get initial anchor from storyline data
+        storylines = get_storylines_data()
+        storyline_protagonist = convert_protagonist_id(request.protagonist)
+        
+        # Find the first anchor from the storyline
+        initial_anchor_id = None
+        for storyline in storylines.get("storylines", []):
+            if storyline.get("protagonist") == storyline_protagonist:
+                nodes = storyline.get("nodes", [])
+                if nodes:
+                    initial_anchor_id = nodes[0]  # Use first anchor in storyline
+                    break
+        
+        if not initial_anchor_id:
+            # Fallback to linear construction
+            initial_anchor_id = f"a{request.chapter_id}_{request.anchor_index + 1}"
+            logger.warning(f"No storyline found for {request.protagonist}, using fallback anchor: {initial_anchor_id}")
+        
+        logger.info(f"Starting game with initial anchor: {initial_anchor_id}")
         initial_anchor_info = get_anchor_info(initial_anchor_id)
         initial_chunk_id = initial_anchor_info["text_chunk_id"]
+        # Parse the actual chapter ID from the anchor
+        try:
+            actual_chapter_id, _ = parse_anchor_id(initial_anchor_id)
+        except ValueError:
+            actual_chapter_id = request.chapter_id
+            
         initial_anchor = Anchor(
             node_id=initial_anchor_id,
-            chapter_id=request.chapter_id,
+            chapter_id=actual_chapter_id,
             chunk_id=initial_chunk_id
         )
         
@@ -259,6 +350,11 @@ async def start_game(
             include_tail=False,
             is_last_anchor_in_chapter=False
         )
+        
+        # 3.5. Extract specific anchor chunk text for ANCHOR_TEXT area
+        anchor_chunk_text = anchor_service.repo.get_chunk_text(initial_chunk_id)
+        initial_anchor_info["anchor_text"] = anchor_chunk_text
+        logger.info(f"Extracted anchor text for {initial_anchor_id}: {len(anchor_chunk_text)} characters")
         
         # 4. Generate initial script with LLM service
         generate_request = GenerateRequest(
@@ -353,14 +449,43 @@ async def process_turn(
     try:
         logger.info(f"Processing turn for session {request.session_id}, anchor {request.chapter_id}_{request.anchor_index}")
         
-        # 1. Find next anchor for progression (use the next anchor as current target)
-        current_anchor_id = f"a{request.chapter_id}_{request.anchor_index + 1}"
-        next_anchor_id = get_next_anchor_index(current_anchor_id)
+        # 1. Determine current anchor we're progressing FROM
+        logger.debug(f"🔍 TURN REQUEST DEBUG:")
+        logger.debug(f"  - request.current_anchor_id: {request.current_anchor_id}")
+        logger.debug(f"  - request.chapter_id: {request.chapter_id}")
+        logger.debug(f"  - request.anchor_index: {request.anchor_index}")
         
-        # If we have a next anchor, use it as our target, otherwise use current
-        target_anchor_id = next_anchor_id if next_anchor_id else current_anchor_id
-        target_anchor_info = get_anchor_info(target_anchor_id)
-        target_chunk_id = target_anchor_info["text_chunk_id"]
+        if request.current_anchor_id:
+            # Use the provided current anchor ID from storyline progression
+            current_anchor_id = request.current_anchor_id
+            logger.info(f"✅ Using storyline-based anchor: {current_anchor_id}")
+        else:
+            # Fallback to linear construction for backward compatibility
+            current_anchor_id = f"a{request.chapter_id}_{request.anchor_index + 1}"
+            logger.warning(f"⚠️  Using linear fallback anchor: {current_anchor_id} (this may not exist in storyline!)")
+        
+        logger.info(f"Current anchor: {current_anchor_id}")
+        
+        # 2. Find the next anchor using storyline relationships
+        next_anchor_id = get_next_anchor_index(current_anchor_id)
+        logger.info(f"Next anchor from storyline: {next_anchor_id}")
+        
+        # 3. Use next anchor as target (where we're progressing TO)
+        if next_anchor_id:
+            target_anchor_id = next_anchor_id
+            target_anchor_info = get_anchor_info(target_anchor_id)
+            target_chunk_id = target_anchor_info["text_chunk_id"]
+        else:
+            # No next anchor found - this could be end of storyline or missing anchor
+            logger.warning(f"No next anchor found for {current_anchor_id}. Using current anchor as target.")
+            target_anchor_id = current_anchor_id
+            target_anchor_info = get_anchor_info(target_anchor_id)
+            target_chunk_id = target_anchor_info["text_chunk_id"]
+        
+        # 3.5. Extract specific anchor chunk text for ANCHOR_TEXT area
+        target_anchor_chunk_text = anchor_service.repo.get_chunk_text(target_chunk_id)
+        target_anchor_info["anchor_text"] = target_anchor_chunk_text
+        logger.info(f"Extracted anchor text for {target_anchor_id}: {len(target_anchor_chunk_text)} characters")
         
         # Build anchor for context generation
         target_anchor = Anchor(
@@ -369,28 +494,34 @@ async def process_turn(
             chunk_id=target_chunk_id
         )
         
-        # Determine next anchor info for response
-        next_chapter_id = request.chapter_id
-        next_anchor_index = request.anchor_index + 1
+        # Determine response anchor info (where we've progressed TO)
+        response_anchor_id = target_anchor_id
+        response_chapter_id = request.chapter_id
+        response_anchor_index = request.anchor_index
         
-        if next_anchor_id:
-            try:
-                next_chapter_id, next_anchor_index = parse_anchor_id(next_anchor_id)
-                logger.info(f"Next anchor: {next_anchor_id} -> chapter {next_chapter_id}, index {next_anchor_index}")
-            except ValueError as e:
-                logger.error(f"Failed to parse next anchor ID {next_anchor_id}: {e}")
-                # Keep current values as fallback
+        try:
+            response_chapter_id, response_anchor_index = parse_anchor_id(target_anchor_id)
+            logger.info(f"Response anchor: {target_anchor_id} -> chapter {response_chapter_id}, index {response_anchor_index}")
+        except ValueError as e:
+            logger.error(f"Failed to parse target anchor ID {target_anchor_id}: {e}")
+            # Keep current values as fallback
         
-        # 3. Build previous anchor if provided
+        # Find the anchor after target for future progression  
+        future_anchor_id = get_next_anchor_index(target_anchor_id) if target_anchor_id != current_anchor_id else None
+        
+        # 3. Build previous anchor using storyline-based current anchor
         previous_anchor = None
-        if request.previous_anchor_index is not None:
-            prev_anchor_id = f"a{request.chapter_id}_{request.previous_anchor_index + 1}"
-            prev_chunk_id = get_chunk_id_from_anchor(prev_anchor_id)
+        if request.current_anchor_id:
+            # Use current anchor as previous anchor for context building
+            # This ensures proper storyline progression instead of linear indexing
+            current_anchor_info = get_anchor_info(request.current_anchor_id)
+            current_chunk_id = current_anchor_info["text_chunk_id"]
             previous_anchor = Anchor(
-                node_id=prev_anchor_id,
+                node_id=request.current_anchor_id,
                 chapter_id=request.chapter_id,
-                chunk_id=prev_chunk_id
+                chunk_id=current_chunk_id
             )
+            logger.info(f"🔗 ANCHOR CONTEXT: Using {request.current_anchor_id} (chunk: {current_chunk_id}) as previous anchor for context building")
         
         # 4. Build context using Anchor Service
         context_response = anchor_service.build_anchor_context(
@@ -399,6 +530,45 @@ async def process_turn(
             include_tail=request.include_tail,
             is_last_anchor_in_chapter=request.is_last_anchor_in_chapter
         )
+        
+        # 4.0. Debug logging for context building results
+        logger.info(f"📖 CONTEXT RESULT: Built context for {target_anchor_id} with {len(context_response.context)} characters")
+        if context_response.context_stats:
+            stats = context_response.context_stats
+            logger.info(f"📊 CONTEXT STATS: chunks={stats.get('chunks_included', 0)}, "
+                       f"start_chunk={stats.get('start_chunk_id')}, end_chunk={stats.get('end_chunk_id')}")
+            if context_response.context:
+                preview = context_response.context[:100].replace('\n', ' ')
+                logger.info(f"🔍 CONTEXT PREVIEW: '{preview}...'")
+        else:
+            logger.warning(f"⚠️  No context stats available for {target_anchor_id}")
+        
+        # 4.1. Fallback for empty context - provide story continuation prompt
+        if not context_response.context or len(context_response.context.strip()) == 0:
+            logger.warning(f"Empty context for anchor {target_anchor_id}. Providing fallback content.")
+            fallback_context = f"""### 故事延续
+            
+玩家选择了: {request.player_choice}
+
+请基于当前游戏状态和玩家选择，创造一个合理的故事片段。
+保持角色一致性，推进剧情发展，并在适当位置提供新的玩家选择机会。
+
+当前情境: 需要继续故事发展..."""
+            
+            # Create a mock context response for fallback
+            from .anchor_service.models import AnchorContextResponse
+            context_response = AnchorContextResponse(
+                context=fallback_context,
+                current_anchor=target_anchor,
+                context_stats={
+                    "total_length": len(fallback_context),
+                    "has_prefix": False,
+                    "has_tail": False,
+                    "chunks_included": 0,
+                    "is_fallback": True,
+                    "original_anchor_id": target_anchor_id
+                }
+            )
         
         # 5. Generate script using LLM Service
         generate_request = GenerateRequest(
@@ -437,11 +607,12 @@ async def process_turn(
             turn_number=generation_result.turn_number,
             context_used=context_response.context,
             anchor_info={
-                "chapter_id": next_chapter_id,
-                "anchor_index": next_anchor_index,
-                "chunk_id": get_chunk_id_from_anchor(next_anchor_id) if next_anchor_id else target_chunk_id,
+                "chapter_id": response_chapter_id,
+                "anchor_index": response_anchor_index,
+                "chunk_id": target_chunk_id,
                 "current_anchor_id": target_anchor_id,
-                "next_anchor_id": next_anchor_id,
+                "next_anchor_id": future_anchor_id,
+                "previous_anchor_id": current_anchor_id,
                 "context_stats": context_response.context_stats
             },
             generation_metadata=generation_result.metadata
@@ -503,6 +674,44 @@ async def get_session_status(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail={"message": "Failed to get session status", "error": str(e)}
+        )
+
+
+@router.post(
+    "/characters/batch",
+    response_model=BatchCharacterResponse,
+    summary="Batch query characters for game",
+    description="Query multiple characters by their IDs. Useful for loading character info when rendering scripts."
+)
+async def batch_query_game_characters(
+    request: BatchCharacterRequest,
+    dict_service: DictService = Depends(get_dict_service)
+) -> BatchCharacterResponse:
+    """
+    Batch query characters for the game interface.
+    
+    This is a convenience endpoint that proxies to the dict service,
+    making it easier for the frontend to get character information
+    in the game context.
+    
+    Args:
+        request: Batch character query request
+        dict_service: Dictionary service instance
+        
+    Returns:
+        BatchCharacterResponse with character data
+    """
+    try:
+        result = await dict_service.batch_query_characters(
+            character_ids=request.character_ids,
+            include_relationships=request.include_relationships
+        )
+        return BatchCharacterResponse(**result)
+    except Exception as e:
+        logger.error(f"Failed to batch query characters: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail={"message": "Failed to query characters", "error": str(e)}
         )
 
 

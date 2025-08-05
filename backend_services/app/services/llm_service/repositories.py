@@ -13,6 +13,8 @@ import json
 import os
 import logging
 import asyncio
+import hashlib
+import time
 from typing import List, Dict, Any, Optional, AsyncGenerator
 from pathlib import Path
 from datetime import datetime
@@ -32,10 +34,11 @@ import warnings
 warnings.filterwarnings("ignore", category=UserWarning, module="langchain")
 
 import tenacity
-from typing import List, cast, Any
+from typing import cast
 
 from .models import TurnEvent, Snapshot, ScriptUnit, GlobalState, TurnEventRole, ScriptUnitType
-from .llm_config import llm_config, DeviationLevel, GenerationConfig
+from .llm_settings import llm_settings, DeviationLevel, GenerationConfig
+from .memory_manager import ModernMemoryManager, ContextWindow
 from backend_services.app.core.config import settings
 
 logger = logging.getLogger(__name__)
@@ -60,7 +63,7 @@ class RateLimiter:
             
             # 检查是否超过限制
             if len(self.requests) >= self.max_requests:
-                sleep_time = self.time_window - (now.timestamp() - self.requests[0])
+                sleep_time = max(0, self.time_window - (now.timestamp() - self.requests[0]))
                 if sleep_time > 0:
                     logger.warning(f"Rate limit reached, sleeping for {sleep_time:.2f} seconds")
                     await asyncio.sleep(sleep_time)
@@ -131,6 +134,29 @@ class EventStreamRepository:
                 for line in lines:
                     if line.strip():
                         event_data = json.loads(line)
+                        
+                        # Convert script dictionaries to ScriptUnit objects
+                        if event_data.get('script') and isinstance(event_data['script'], list):
+                            script_units = []
+                            for unit_data in event_data['script']:
+                                if isinstance(unit_data, dict):
+                                    try:
+                                        script_unit = ScriptUnit(
+                                            type=ScriptUnitType(unit_data.get("type", "narration")),
+                                            content=unit_data.get("content", ""),
+                                            speaker=unit_data.get("speaker"),
+                                            choice_id=unit_data.get("choice_id"),
+                                            default_reply=unit_data.get("default_reply"),
+                                            metadata=unit_data.get("metadata", {})
+                                        )
+                                        script_units.append(script_unit)
+                                    except (KeyError, ValueError) as e:
+                                        logger.warning(f"Invalid script unit data in stored event: {unit_data}, error: {e}")
+                                        continue
+                                elif isinstance(unit_data, ScriptUnit):
+                                    script_units.append(unit_data)
+                            event_data['script'] = script_units
+                        
                         event = TurnEvent(**event_data)
                         if event.t >= from_turn:
                             events.append(event)
@@ -179,7 +205,8 @@ class EventStreamRepository:
                 for line in reversed(lines):
                     if line.strip():
                         event_data = json.loads(line)
-                        return event_data.get('t', 0)
+                        turn_number = event_data.get('t', 0)
+                        return int(turn_number) if isinstance(turn_number, (int, float)) else 0
                 
                 return 0
         except Exception as e:
@@ -299,29 +326,55 @@ class SnapshotRepository:
         return snapshot
 
 
-class LLMRepository:
+class UnifiedLLMRepository:
     """
-    Repository for LLM API interactions and chain management.
+    Unified repository for LLM operations supporting multiple providers.
     
     Handles:
-    - OpenAI API calls with structured outputs
-    - LangChain chain configuration
+    - Multiple LLM providers (OpenAI, Gemini, etc.)
+    - Unified API interface across providers
     - Memory management and summarization
+    - Provider switching and configuration
     """
     
     def __init__(self):
-        """Initialize LLM repository."""
+        """Initialize unified LLM repository."""
+        # Import provider system
+        from .providers import get_llm_provider, LLMProviderFactory
+        
+        # Initialize current provider
+        self.provider = get_llm_provider()
+        self.provider_factory = LLMProviderFactory
+        
+        # Legacy OpenAI client for summarization (deprecated)
         self.openai_client = None
         self.langchain_llm = None
-        self.rate_limiter = RateLimiter(max_requests=30, time_window=60)  # 每分钟30个请求
+        
+        # Use rate limiting from settings
+        self.rate_limiter = RateLimiter(
+            max_requests=llm_settings.rate_limit_requests, 
+            time_window=llm_settings.rate_limit_window
+        )
         
         # Content balance tracking
         self._last_generation_stats = {}  # session_id -> {narration_count, dialogue_count}
         
-        self._init_clients()
+        # Request deduplication tracking  
+        self._pending_requests = {}  # request_hash -> asyncio.Task
+        self._request_cache = {}  # request_hash -> (result, timestamp)
+        self._session_locks = {}  # session_id -> asyncio.Lock (prevent concurrent sessions)
+        self._cache_timeout = 30  # seconds
+        
+        # Initialize modern memory manager
+        self.memory_manager = ModernMemoryManager()
+        
+        # Initialize legacy clients for backward compatibility (deprecated - now using unified provider)
+        # self._init_legacy_clients()
+        
+        logger.info(f"Initialized unified repository with {self.provider.provider.value} provider")
     
-    def _init_clients(self):
-        """Initialize OpenAI and LangChain clients."""
+    def _init_legacy_clients(self):
+        """Initialize legacy OpenAI and LangChain clients for backward compatibility."""
         if not settings.openai_api_key:
             logger.warning("OpenAI API key not configured")
             return
@@ -330,15 +383,77 @@ class LLMRepository:
             # Initialize OpenAI client
             self.openai_client = AsyncOpenAI(api_key=settings.openai_api_key)
             
-            # Initialize LangChain ChatOpenAI (2025年优化：依赖环境变量)
+            # Initialize LangChain ChatOpenAI using settings
             self.langchain_llm = ChatOpenAI(
-                model="gpt-4o-mini",
-                temperature=0.3
+                model=llm_settings.summarization_model,
+                temperature=llm_settings.summarization_temperature,
+                max_tokens=llm_settings.summarization_max_tokens
             )
             
             logger.info("Initialized OpenAI and LangChain clients")
         except Exception as e:
             logger.error(f"Failed to initialize LLM clients: {e}")
+    
+    # Unified Provider Interface Methods
+    def switch_provider(self, provider: str, model: str = None) -> None:
+        """
+        Switch to a different LLM provider.
+        
+        Args:
+            provider: Provider name (openai, gemini, etc.)
+            model: Model name (optional)
+        """
+        from .providers import switch_provider
+        self.provider = switch_provider(provider, model)
+        logger.info(f"Repository switched to {provider} provider")
+    
+    def get_current_provider_info(self) -> Dict[str, Any]:
+        """
+        Get information about the current provider.
+        
+        Returns:
+            Dictionary with provider information
+        """
+        return {
+            "provider": self.provider.provider.value,
+            "model": self.provider.model_name,
+            "info": self.provider.get_model_info()
+        }
+    
+    async def generate_summary(self, text: str, max_length: int = 500) -> str:
+        """
+        Generate a summary using the current provider.
+        
+        Args:
+            text: Text to summarize
+            max_length: Maximum length of summary
+            
+        Returns:
+            Summary text
+        """
+        return await self.provider.generate_summary(text, max_length)
+    
+    def _create_request_hash(self, prompt: str, context: str, session_id: str, 
+                           deviation: float, temperature: float) -> str:
+        """Create a hash for request deduplication."""
+        # Use more stable elements for hashing to prevent minor variations
+        stable_context = context[:200] if context else ""  # More context for stability
+        stable_prompt = prompt[:100] if prompt else ""  # Include player choice in hash
+        # Round temperature to avoid floating point precision issues
+        stable_temp = round(temperature, 1)
+        stable_deviation = round(deviation, 2)
+        request_str = f"{session_id}:{stable_context}:{stable_prompt}:{stable_deviation}:{stable_temp}"
+        return hashlib.md5(request_str.encode()).hexdigest()
+    
+    def _cleanup_cache(self):
+        """Clean up expired cache entries."""
+        current_time = time.time()
+        expired_keys = [
+            key for key, (_, timestamp) in self._request_cache.items()
+            if current_time - timestamp > self._cache_timeout
+        ]
+        for key in expired_keys:
+            del self._request_cache[key]
     
     @tenacity.retry(
         stop=tenacity.stop_after_attempt(3),
@@ -354,13 +469,16 @@ class LLMRepository:
         temperature: Optional[float] = None,
         max_tokens: Optional[int] = None,
         anchor_info: Optional[Dict[str, Any]] = None,
-        session_id: Optional[str] = None
+        session_id: Optional[str] = None,
+        user_event: Optional[TurnEvent] = None,
+        assistant_event: Optional[TurnEvent] = None,
+        memory_context: Optional[str] = None
     ) -> Dict[str, Any]:
         """
-        Generate structured script using OpenAI with improved content balance control.
+        Generate structured script using the current LLM provider.
         
-        Implements the enhanced prompt strategy to reduce narrator overuse and
-        improve dialogue-to-narration ratios based on deviation levels.
+        Uses the unified provider system to support multiple LLM backends
+        while maintaining the same interface and content balance control.
         
         Args:
             prompt: User action/choice
@@ -370,164 +488,161 @@ class LLMRepository:
             max_tokens: Maximum tokens
             anchor_info: Optional anchor information for choice event generation
             session_id: Session ID for tracking generation stats
+            user_event: User turn event
+            assistant_event: Assistant turn event  
+            memory_context: Memory/history context
             
         Returns:
             Structured generation result with balanced content
         """
-        if not self.openai_client:
-            raise ValueError("OpenAI client not initialized")
+        # Initialize memory_context immediately to prevent UnboundLocalError in exception handlers
+        if memory_context is None:
+            memory_context = ""
         
-        # 应用速率限制
-        await self.rate_limiter.acquire()
+        if not self.provider:
+            raise ValueError("LLM provider not initialized")
         
-        try:
-            # Get generation configuration based on deviation level
-            deviation = current_state.deviation
-            config = llm_config.get_generation_config(deviation)
-            target_counts = llm_config.get_required_counts(deviation)
-            
-            # Use config values as defaults
-            final_temperature = temperature if temperature is not None else config.temperature
-            final_max_tokens = max_tokens if max_tokens is not None else config.max_tokens
-            
-            # Check if temperature adjustment is needed based on last generation
-            if session_id and session_id in self._last_generation_stats:
-                last_stats = self._last_generation_stats[session_id]
-                should_adjust, adjusted_temp = llm_config.should_adjust_temperature(
-                    deviation,
-                    last_stats.get('narration_count', 0),
-                    last_stats.get('dialogue_count', 0)
-                )
-                if should_adjust:
-                    final_temperature = adjusted_temp
-                    logger.info(f"Adjusted temperature to {adjusted_temp} for better content balance")
-            # Get tools and messages from config
-            tools = self._build_tools_from_config(deviation)
-            system_message = self._build_system_message_from_config(
-                current_state, context, target_counts, config
+        # Clean up expired cache entries
+        self._cleanup_cache()
+        
+        # Get or create session lock to prevent concurrent requests for same session
+        session_key = session_id or "unknown"
+        if session_key not in self._session_locks:
+            self._session_locks[session_key] = asyncio.Lock()
+        session_lock = self._session_locks[session_key]
+        
+        # Use session lock to prevent race conditions
+        async with session_lock:
+            # Create request hash for deduplication
+            request_hash = self._create_request_hash(
+                prompt, context, session_key, 
+                current_state.deviation, temperature or 0.7
             )
             
-            # Build user message from config
-            user_message = self._build_user_message_from_config(
-                context, prompt, anchor_info, current_state, target_counts, config
-            )
+            # Check if this exact request is already being processed
+            if request_hash in self._pending_requests:
+                logger.info(f"🚫 Duplicate request detected, waiting for existing request: {request_hash[:8]}")
+                try:
+                    return await self._pending_requests[request_hash]
+                except asyncio.CancelledError:
+                    logger.info(f"Existing request was cancelled, processing new one: {request_hash[:8]}")
             
-            # Make API call with optimized parameters
-            response = await self._make_openai_request(
-                system_message, user_message, tools, final_temperature, final_max_tokens
-            )
+            # Check cache for recent identical requests (but reduce caching for interaction generation)
+            cache_timeout = self._cache_timeout * 0.5 if prompt else self._cache_timeout  # Shorter cache for user interactions
+            if request_hash in self._request_cache:
+                result, timestamp = self._request_cache[request_hash]
+                if time.time() - timestamp < cache_timeout:
+                    logger.info(f"🔄 Returning cached result for request: {request_hash[:8]} (timeout: {cache_timeout}s)")
+                    return result
             
-            # 更安全的响应解析
-            if not response.choices or not response.choices[0].message.tool_calls:
-                logger.error("No tool calls returned from OpenAI API")
-                return {
-                    "error": True,
-                    "error_type": "no_tool_calls",
-                    "error_message": "No tool calls returned from OpenAI API",
-                    "retry": True
-                }
+            # 应用速率限制
+            await self.rate_limiter.acquire()
             
-            tool_call = response.choices[0].message.tool_calls[0]
+            # Create and register the generation task
+            async def _perform_generation():
+                nonlocal memory_context
+                    
+                try:
+                    # Store player choice for duplicate detection
+                    self._last_player_choice = prompt if prompt else ""
+                    
+                    # Get memory context - use provided context or build from memory manager
+                    if not memory_context and session_id:
+                        try:
+                            context_window = await self.memory_manager.get_context_window(
+                                session_id, context, prompt
+                            )
+                            # Keep memory separate - don't mix with source context
+                            memory_context = self.memory_manager.build_memory_context(context_window)
+                        except Exception as e:
+                            logger.warning(f"Failed to build memory context: {e}")
+                            memory_context = ""  # Fallback to empty
+                    
+                    # Ensure memory_context is always a string
+                    memory_context = str(memory_context) if memory_context else ""
+                    
+                    source_context = context  # This is the actual text to be rewritten
+                    
+                    # Get generation configuration based on deviation level
+                    deviation = current_state.deviation
+                    config = llm_settings.get_generation_config(deviation)
+                    target_counts = llm_settings.get_required_counts(deviation, len(source_context))
+                    
+                    # Use config values as defaults
+                    final_temperature = temperature if temperature is not None else config.temperature
+                    final_max_tokens = max_tokens if max_tokens is not None else config.max_tokens
+                    
+                    # Check if temperature adjustment is needed based on last generation
+                    if session_id and session_id in self._last_generation_stats:
+                        last_stats = self._last_generation_stats[session_id]
+                        should_adjust, adjusted_temp = llm_settings.should_adjust_temperature(
+                            deviation,
+                            last_stats.get('narration_count', 0),
+                            last_stats.get('dialogue_count', 0)
+                        )
+                        if should_adjust:
+                            final_temperature = adjusted_temp
+                            logger.info(f"Adjusted temperature to {adjusted_temp} for better content balance")
+                            
+                    # Get tools and messages from config
+                    tools = self._build_tools_from_config(deviation, len(source_context))
+                    system_message = self._build_system_message_from_config(
+                        current_state, context, target_counts, config
+                    )
+                    
+                    # Build user message with separated memory and source context
+                    user_message = self._build_user_message_from_config(
+                        source_context, memory_context, prompt, anchor_info, current_state, target_counts, config
+                    )
+                    
+                    # Generate structured script with provider
+                    
+                    # Use unified provider for generation
+                    result_data = await self.provider.generate_structured_script(
+                        prompt=prompt,
+                        context=source_context,
+                        current_state=current_state.model_dump(),
+                        temperature=final_temperature,
+                        max_tokens=final_max_tokens,
+                        anchor_info=anchor_info,
+                        session_id=session_id,
+                        user_event=user_event,
+                        assistant_event=assistant_event,
+                        memory_context=memory_context
+                    )
+                    
+                    # Store interaction in memory manager (if events provided)
+                    if session_id and user_event and assistant_event:
+                        # Update assistant event with generated script
+                        script_units = result_data.get("script_units", [])
+                        assistant_event.script = script_units
+                        await self.memory_manager.add_interaction(
+                            session_id, user_event, assistant_event, context
+                        )
+                    
+                    # Cache the result
+                    self._request_cache[request_hash] = (result_data, time.time())
+                    return result_data
+                    
+                except Exception as e:
+                    logger.error(f"Failed to generate structured script: {e}")
+                    # Return fallback response - create basic fallback
+                    if session_id:
+                        fallback = self._get_fallback_response(session_id, str(e))
+                        return fallback
+                    raise
+            
+            # Register and execute the generation task
+            task = asyncio.create_task(_perform_generation())
+            self._pending_requests[request_hash] = task
             
             try:
-                result = json.loads(tool_call.function.arguments)
-            except json.JSONDecodeError as e:
-                logger.error(f"Failed to parse tool call arguments: {e}")
-                return {
-                    "error": True,
-                    "error_type": "json_parse_error",
-                    "error_message": f"Failed to parse tool call arguments: {e}",
-                    "retry": True
-                }
-            
-            # Convert to ScriptUnit objects
-            script_units = []
-            for unit_data in result.get("script_units", []):
-                try:
-                    unit_type = ScriptUnitType(unit_data["type"])
-                    script_units.append(ScriptUnit(
-                        type=unit_type,
-                        content=unit_data["content"],
-                        speaker=unit_data.get("speaker"),
-                        choice_id=unit_data.get("choice_id"),
-                        default_reply=unit_data.get("default_reply"),
-                        metadata=unit_data.get("metadata", {})
-                    ))
-                except (KeyError, ValueError) as e:
-                    logger.error(f"Invalid script unit data: {unit_data}, error: {e}")
-                    continue
-            
-            # Get usage info
-            usage_info = {}
-            if response.usage:
-                usage_info = {
-                    "prompt_tokens": response.usage.prompt_tokens,
-                    "completion_tokens": response.usage.completion_tokens,
-                    "total_tokens": response.usage.total_tokens
-                }
-            
-            # Track content balance statistics for next generation
-            if session_id:
-                narration_count = sum(1 for unit in script_units if unit.type == ScriptUnitType.NARRATION)
-                dialogue_count = sum(1 for unit in script_units if unit.type in [ScriptUnitType.DIALOGUE])
-                
-                self._last_generation_stats[session_id] = {
-                    'narration_count': narration_count,
-                    'dialogue_count': dialogue_count,
-                    'total_count': len(script_units)
-                }
-                
-                logger.info(f"Content balance for {session_id}: {narration_count} narration, {dialogue_count} dialogue")
-            
-            # Validate and fix script structure
-            script_units = self._ensure_valid_script_structure(script_units, session_id)
-            
-            # Validate content counts match targets
-            actual_counts = result.get("required_counts", {})
-            if not actual_counts:
-                # Calculate actual counts if not provided
-                actual_counts = {
-                    "narration": sum(1 for unit in script_units if unit.type == ScriptUnitType.NARRATION),
-                    "dialogue": sum(1 for unit in script_units if unit.type == ScriptUnitType.DIALOGUE),
-                    "interaction": sum(1 for unit in script_units if unit.type == ScriptUnitType.INTERACTION)
-                }
-            
-            return {
-                "script_units": script_units,
-                "required_counts": actual_counts,
-                "target_counts": target_counts,
-                "deviation_delta": result.get("deviation_delta", 0.0),
-                "affinity_changes": result.get("affinity_changes", {}),
-                "flags_updates": result.get("flags_updates", {}),
-                "variables_updates": result.get("variables_updates", {}),
-                "usage": usage_info,
-                "generation_config": {
-                    "temperature": final_temperature,
-                    "original_temperature": temperature,
-                    "deviation_level": llm_config.get_deviation_level(deviation).value,
-                    "dialogue_ratio_target": config.dialogue_ratio_target
-                }
-            }
-            
-        except OpenAIError as e:
-            logger.error(f"OpenAI API error: {e}")
-            # Return fallback response from config
-            if session_id:
-                fallback = llm_config.get_fallback_response(session_id, str(e))
-                return fallback
-            return {
-                "error": True,
-                "error_type": "openai_error",
-                "error_message": str(e),
-                "retry": True
-            }
-        except Exception as e:
-            logger.error(f"Failed to generate structured script: {e}")
-            # Return fallback response from config
-            if session_id:
-                fallback = llm_config.get_fallback_response(session_id, str(e))
-                return fallback
-            raise
+                result = await task
+                return result
+            finally:
+                # Clean up the pending request
+                if request_hash in self._pending_requests:
+                    del self._pending_requests[request_hash]
     
     async def summarize_events(self, events: List[TurnEvent]) -> str:
         """
@@ -539,8 +654,9 @@ class LLMRepository:
         Returns:
             Summarized conversation history
         """
-        if not self.langchain_llm:
-            raise ValueError("LangChain LLM not initialized")
+        # 使用统一的provider系统进行摘要
+        if not self.provider:
+            raise ValueError("Provider not initialized")
         
         try:
             # 将事件转换为文本内容
@@ -550,7 +666,16 @@ class LLMRepository:
                     user_content = f"玩家选择: {event.choice or event.anchor}"
                     conversation_parts.append(f"用户: {user_content}")
                 elif event.role == TurnEventRole.ASSISTANT and event.script:
-                    assistant_content = "\n".join([unit.content for unit in event.script])
+                    # Handle both ScriptUnit objects and raw dictionaries from storage
+                    script_contents = []
+                    for unit in event.script:
+                        if isinstance(unit, ScriptUnit):
+                            script_contents.append(unit.content)
+                        elif isinstance(unit, dict):
+                            script_contents.append(unit.get("content", ""))
+                        else:
+                            script_contents.append(str(unit))
+                    assistant_content = "\n".join(script_contents)
                     conversation_parts.append(f"助手: {assistant_content}")
             
             # 组合所有对话内容
@@ -560,43 +685,12 @@ class LLMRepository:
             if not full_text.strip():
                 return ""
             
-            # 使用配置文件的摘要模板
-            summary_prompt = PromptTemplate(
-                input_variables=["text"],
-                template=llm_config.get_summarization_prompt()
+            # 使用provider的generate_summary方法
+            summary = await self.provider.generate_summary(
+                text=full_text,
+                max_length=llm_settings.summarization_max_tokens
             )
-            
-            # 使用LCEL替代deprecated LLMChain
-            chain = summary_prompt | self.langchain_llm | StrOutputParser()
-            
-            # 如果文本太长，进行分块处理
-            if len(full_text) > 8000:  # 大约4000 tokens
-                # 分块摘要
-                chunks = self._split_text_into_chunks(full_text, 4000)
-                summaries = []
-                
-                for chunk in chunks:
-                    try:
-                        # 使用LCEL chain.ainvoke方法
-                        summary = await chain.ainvoke({"text": chunk})
-                        summaries.append(summary)
-                    except Exception as e:
-                        logger.error(f"Failed to summarize chunk: {e}")
-                        continue
-                
-                # 合并摘要
-                combined_summary = " ".join(summaries)
-                
-                # 对合并后的摘要再次摘要
-                if len(combined_summary) > 2000:
-                    final_summary = await chain.ainvoke({"text": combined_summary})
-                    return final_summary
-                else:
-                    return combined_summary
-            else:
-                # 直接摘要
-                summary = await chain.ainvoke({"text": full_text})
-                return summary
+            return summary
             
         except Exception as e:
             logger.error(f"Failed to summarize events: {e}")
@@ -632,9 +726,9 @@ class LLMRepository:
         
         return chunks
     
-    def _build_tools_from_config(self, deviation: float) -> List[Dict[str, Any]]:
+    def _build_tools_from_config(self, deviation: float, input_length: int = 0) -> List[Dict[str, Any]]:
         """Build tools array from config."""
-        function_schema = llm_config.get_function_schema_with_counts(deviation)
+        function_schema = llm_settings.get_function_schema_with_counts(deviation, input_length)
         return [
             {
                 "type": "function",
@@ -650,15 +744,15 @@ class LLMRepository:
         config: GenerationConfig
     ) -> str:
         """Build system message from config."""
-        # Build enhanced system prompt using config
-        system_message = llm_config.build_system_prompt(
+        # Build enhanced system prompt using version routing
+        system_message = llm_settings.get_system_prompt(
             deviation=current_state.deviation,
             current_state=current_state.model_dump(),
             context_length=len(context)
         )
         
         # Add game state details from config
-        system_message += llm_config.build_game_state_details(
+        system_message += llm_settings.build_game_state_details(
             current_state.model_dump(),
             target_counts
         )
@@ -668,15 +762,17 @@ class LLMRepository:
     def _build_user_message_from_config(
         self,
         context: str,
+        memory_context: str,
         prompt: str,
         anchor_info: Optional[Dict[str, Any]],
         current_state: GlobalState,
         target_counts: Dict[str, int],
         config: GenerationConfig
     ) -> str:
-        """Build user message from config."""
-        return llm_config.build_user_message(
+        """Build user message from config with separated memory and context."""
+        return llm_settings.get_user_message(
             context=context,
+            memory_context=memory_context,
             prompt=prompt,
             anchor_info=anchor_info,
             current_state=current_state.model_dump(),
@@ -708,19 +804,44 @@ class LLMRepository:
         has_interaction = any(unit.type == ScriptUnitType.INTERACTION for unit in script_units)
         last_is_interaction = script_units[-1].type == ScriptUnitType.INTERACTION
         
+        # Check for duplicate/invalid interaction content
+        if last_is_interaction and len(script_units) > 0:
+            last_unit = script_units[-1]
+            # Check if interaction content is too generic or repetitive
+            generic_patterns = [
+                "你感受到了「捕食者」的力量，接下来你想做什么？",
+                "面对眼前的情况，你会如何行动？",
+                "你想要探索什么方向？"
+            ]
+            # Only flag as duplicate if it exactly matches known generic patterns
+            if (last_unit.content and any(pattern in last_unit.content for pattern in generic_patterns)):
+                logger.warning(f"Detected generic interaction content for session {session_id}: {last_unit.content[:50]}...")
+                last_is_interaction = False  # Force fallback generation
+        
         if not has_interaction or not last_is_interaction:
             logger.warning(f"Script missing proper interaction unit for session {session_id}, adding fallback")
             
             # Remove any existing interaction units that are not at the end
             script_units = [unit for unit in script_units if unit.type != ScriptUnitType.INTERACTION]
             
-            # Add fallback interaction unit
+            # Add context-aware fallback interaction unit
+            import random
+            fallback_prompts = [
+                "在这个关键时刻，你准备如何行动？",
+                "面对当前的局面，你有什么想法？",
+                "接下来的选择将影响你的命运，你决定...？",
+                "这种情况下，你会选择什么样的应对方式？",
+                "你感到内心涌起一种冲动，想要...",
+                "现在你需要做出一个重要的决定..."
+            ]
+            fallback_content = random.choice(fallback_prompts)
+            
             script_units.append(ScriptUnit(
                 type=ScriptUnitType.INTERACTION,
-                content="请选择你的下一步行动：",
+                content=fallback_content,
                 choice_id="continue_story",
-                default_reply="继续",
-                metadata={"fallback_added": True}
+                default_reply="继续探索",
+                metadata={"fallback_added": True, "timestamp": time.time()}
             ))
         
         return script_units
@@ -734,40 +855,162 @@ class LLMRepository:
         max_tokens: int
     ):
         """Make OpenAI API request with standardized parameters."""
-        return await self.openai_client.chat.completions.create(
-            model="gpt-4o-mini",
-            messages=[
-                {"role": "system", "content": system_message},
-                {"role": "user", "content": user_message}
+        # Check if using o4-mini model which has different requirements
+        if llm_settings.current_model == "o4-mini":
+            # o4-mini uses a single user message for reasoning
+            # Combine system and user messages for better reasoning
+            combined_message = f"# System Instructions\n{system_message}\n\n# User Request\n{user_message}"
+            return await self.openai_client.chat.completions.create(
+                model=llm_settings.current_model,
+                messages=[
+                    {"role": "user", "content": combined_message}
+                ],
+                tools=cast(Any, tools),
+                tool_choice={"type": "function", "function": {"name": tools[0]["function"]["name"]}},
+                temperature=1.0,  # o4-mini uses fixed temperature
+                max_completion_tokens=max_tokens  # o4-mini uses max_completion_tokens instead of max_tokens
+            )
+        else:
+            # Standard OpenAI models
+            return await self.openai_client.chat.completions.create(
+                model=llm_settings.current_model,
+                messages=[
+                    {"role": "system", "content": system_message},
+                    {"role": "user", "content": user_message}
+                ],
+                tools=cast(Any, tools),
+                tool_choice={"type": "function", "function": {"name": tools[0]["function"]["name"]}},
+                temperature=temperature,
+                max_tokens=max_tokens
+            )
+    
+    def _get_fallback_response(self, session_id: str, error: str) -> Dict[str, Any]:
+        """Get fallback response when generation fails."""
+        return {
+            "script_units": [
+                ScriptUnit(
+                    type=ScriptUnitType.NARRATION,
+                    content="故事暂时停顿了一下，等待着下一个转折点的到来。",
+                    metadata={"fallback": True, "error": error}
+                ),
+                ScriptUnit(
+                    type=ScriptUnitType.INTERACTION,
+                    content="请选择你的下一步行动：",
+                    choice_id="fallback_choice",
+                    default_reply="继续",
+                    metadata={"fallback": True}
+                )
             ],
-            tools=cast(Any, tools),
-            tool_choice={"type": "function", "function": {"name": tools[0]["function"]["name"]}},
-            temperature=temperature,
-            max_tokens=max_tokens
-        )
+            "required_counts": {"narration": 1, "dialogue": 0, "interaction": 1},
+            "deviation_delta": 0.0,
+            "affinity_changes": {},
+            "metadata": {
+                "fallback": True,
+                "error": error,
+                "session_id": session_id
+            }
+        }
+    
+    def _clean_malformed_json(self, raw_json: str) -> str:
+        """
+        Attempt to fix common JSON formatting issues.
+        
+        Args:
+            raw_json: Malformed JSON string
+            
+        Returns:
+            Cleaned JSON string
+        """
+        cleaned = raw_json
+        
+        # Common fixes for malformed JSON
+        try:
+            # 1. Fix unescaped quotes in strings (basic approach)
+            # This is a simplified fix - a more robust solution would use proper parsing
+            import re
+            
+            # 2. Ensure the JSON ends properly (sometimes gets truncated)
+            if not cleaned.rstrip().endswith('}'):
+                # Find the last complete object
+                brace_count = 0
+                last_valid_pos = len(cleaned)
+                for i in range(len(cleaned) - 1, -1, -1):
+                    if cleaned[i] == '}':
+                        brace_count += 1
+                    elif cleaned[i] == '{':
+                        brace_count -= 1
+                        if brace_count == 0:
+                            last_valid_pos = i
+                            break
+                
+                # Truncate to last valid position and add closing brace if needed
+                if last_valid_pos < len(cleaned):
+                    cleaned = cleaned[:last_valid_pos]
+                    # Count opening vs closing braces
+                    open_braces = cleaned.count('{')
+                    close_braces = cleaned.count('}')
+                    if open_braces > close_braces:
+                        cleaned += '}' * (open_braces - close_braces)
+            
+            # 3. Fix unterminated strings by adding closing quotes
+            # This is a heuristic approach - look for lines that start with quotes but don't end with them
+            lines = cleaned.split('\n')
+            fixed_lines = []
+            for line in lines:
+                stripped = line.strip()
+                # If line starts with a quote but doesn't end properly, try to fix
+                if stripped.startswith('"') and not (stripped.endswith('"') or stripped.endswith('",') or stripped.endswith('"}')):
+                    # Find the last quote and see if we need to add one
+                    if stripped.count('"') % 2 == 1:  # Odd number of quotes means unterminated
+                        # Add closing quote before any trailing comma or brace
+                        if stripped.endswith(','):
+                            line = line.rstrip(',') + '",'
+                        elif stripped.endswith('}'):
+                            line = line.rstrip('}') + '"}'
+                        else:
+                            line = line + '"'
+                fixed_lines.append(line)
+            
+            cleaned = '\n'.join(fixed_lines)
+            
+            # 4. Remove any trailing comma before closing braces/brackets
+            cleaned = re.sub(r',(\s*[}\]])', r'\1', cleaned)
+            
+            logger.info(f"Applied JSON cleaning heuristics")
+            return cleaned
+            
+        except Exception as e:
+            logger.error(f"Error during JSON cleaning: {e}")
+            return raw_json
     
     async def health_check(self) -> Dict[str, Any]:
         """
-        Check LLM service health.
+        Check unified LLM service health.
         
         Returns:
             Health status information
         """
+        # Check current provider health
+        provider_health = await self.provider.health_check()
+        
         status = {
-            "openai_available": self.openai_client is not None,
+            "provider": self.provider.provider.value,
+            "model": self.provider.model_name,
+            "provider_health": provider_health,
             "langchain_available": self.langchain_llm is not None,
+            "memory_manager_stats": self.memory_manager.get_memory_stats(),
+            "available_providers": self.provider_factory.get_available_providers(),
             "timestamp": datetime.now().isoformat()
         }
         
-        # Test OpenAI API
+        # Test legacy OpenAI client if available
         if self.openai_client:
             try:
-                # 使用更安全的健康检查
                 models = await self.openai_client.models.list()
-                status["openai_status"] = "healthy"
-                status["available_models"] = len(models.data) if models.data else 0
+                status["legacy_openai_status"] = "healthy"
+                status["legacy_openai_models"] = len(models.data) if models.data else 0
             except Exception as e:
-                status["openai_status"] = f"error: {str(e)[:100]}"
+                status["legacy_openai_status"] = f"error: {str(e)[:100]}"
         
         return status
 
@@ -784,12 +1027,12 @@ class SessionRepository:
         """Initialize session repository."""
         self.event_repo = EventStreamRepository()
         self.snapshot_repo = SnapshotRepository()
-        self.llm_repo = LLMRepository()
+        self.llm_repo = UnifiedLLMRepository()
         
-        # Configuration
-        self.max_recent_events = 50
-        self.max_snapshot_size = 32 * 1024  # 32KB
-        self.summarization_batch_size = 30
+        # Configuration from settings
+        self.max_recent_events = llm_settings.max_recent_events
+        self.max_snapshot_size = llm_settings.max_snapshot_size
+        self.summarization_batch_size = llm_settings.summarization_batch_size
     
     async def get_or_create_session(self, session_id: str, protagonist: str) -> Snapshot:
         """
@@ -931,3 +1174,13 @@ class SessionRepository:
                 remove_count = len(snapshot.recent) - self.max_recent_events
                 snapshot.recent = snapshot.recent[remove_count:]
                 logger.info(f"Removed {remove_count} old events due to summarization failure")
+
+
+# Backward compatibility alias
+LLMRepository = UnifiedLLMRepository
+
+
+# Convenience functions for unified repository
+def get_unified_repository() -> UnifiedLLMRepository:
+    """Get the default unified repository instance."""
+    return UnifiedLLMRepository()

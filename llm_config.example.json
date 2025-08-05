@@ -1,0 +1,29 @@
+{
+  "api_keys": {
+    "openai_api_key": "sk-your-openai-api-key-here",
+    "google_api_key": "your-google-api-key-here",
+    "anthropic_api_key": "your-anthropic-api-key-here"
+  },
+  "llm_settings": {
+    "default_provider": "gemini",
+    "default_model": "gemini-2.5-pro",
+    "providers": {
+      "openai": {
+        "models": ["gpt-4o-mini", "gpt-4o", "gpt-4-turbo", "o4-mini"],
+        "default_model": "gpt-4o-mini"
+      },
+      "gemini": {
+        "models": ["gemini-2.5-pro", "gemini-2.5-flash", "gemini-1.5-pro", "gemini-1.5-flash"],
+        "default_model": "gemini-2.5-pro"
+      }
+    }
+  },
+  "generation_settings": {
+    "default_temperature": 0.8,
+    "max_tokens": 4096,
+    "rate_limit": {
+      "requests": 10,
+      "window": 60
+    }
+  }
+}

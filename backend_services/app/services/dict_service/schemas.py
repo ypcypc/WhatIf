@@ -168,4 +168,43 @@ class GlossaryResponse(BaseModel):
                 "category": "魔物",
                 "related_terms": ["魔物", "转生"]
             }
+        }
+
+
+class BatchCharacterRequest(BaseModel):
+    """Request model for batch character queries."""
+    
+    character_ids: List[str] = Field(..., description="List of character IDs to query")
+    include_relationships: bool = Field(True, description="Include relationship information")
+    
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "character_ids": ["c_san_shang_wu", "c_veldora", "c_great_sage"],
+                "include_relationships": True
+            }
+        }
+
+
+class BatchCharacterResponse(BaseModel):
+    """Response model for batch character queries."""
+    
+    characters: Dict[str, CharacterResponse] = Field(..., description="Character data mapped by ID")
+    not_found: List[str] = Field(default_factory=list, description="IDs that were not found")
+    
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "characters": {
+                    "c_san_shang_wu": {
+                        "id": "c_san_shang_wu",
+                        "name": "三上悟",
+                        "aliases": ["利姆路", "史莱姆"],
+                        "race": "史莱姆",
+                        "gender": "男",
+                        "is_protagonist": True
+                    }
+                },
+                "not_found": ["c_unknown"]
+            }
         } 
