@@ -1,0 +1,1372 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WhatIf Session Log Analyzer</title>
+<style>
+:root {
+  --bg: #1a1b26;
+  --surface: #24283b;
+  --surface2: #2f3349;
+  --border: #3b4261;
+  --text: #c0caf5;
+  --text-dim: #565f89;
+  --accent: #7aa2f7;
+  --green: #9ece6a;
+  --orange: #ff9e64;
+  --red: #f7768e;
+  --purple: #bb9af7;
+  --cyan: #7dcfff;
+  --yellow: #e0af68;
+  --z-detail: 30;
+  --z-toast: 50;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+  min-height: 100vh;
+}
+
+/* ===== Drop Zone ===== */
+#drop-zone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 2rem;
+  transition: background 0.2s;
+}
+#drop-zone.dragover { background: var(--surface); }
+#drop-zone h1 { font-size: 1.8rem; margin-bottom: 0.5rem; color: var(--accent); }
+#drop-zone p { color: var(--text-dim); margin-bottom: 1.5rem; }
+#drop-zone label {
+  display: inline-block;
+  padding: 0.7rem 2rem;
+  background: var(--accent);
+  color: var(--bg);
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: opacity 0.2s;
+}
+#drop-zone label:hover { opacity: 0.85; }
+#drop-zone input { display: none; }
+
+/* ===== Main Layout ===== */
+#app { display: none; }
+#app.active { display: flex; flex-direction: column; min-height: 100vh; }
+
+header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.8rem 1.5rem;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+header h1 { font-size: 1.1rem; color: var(--accent); }
+header .session-info { font-size: 0.85rem; color: var(--text-dim); }
+#btn-reload {
+  background: none; border: 1px solid var(--border); color: var(--text-dim);
+  padding: 0.3rem 0.8rem; border-radius: 4px; cursor: pointer; font-size: 0.8rem;
+}
+#btn-reload:hover { border-color: var(--accent); color: var(--accent); }
+#btn-watch {
+  background: none; border: 1px solid var(--border); color: var(--text-dim);
+  padding: 0.3rem 0.8rem; border-radius: 4px; cursor: pointer; font-size: 0.8rem;
+  margin-right: 0.5rem; transition: all 0.2s;
+}
+#btn-watch:hover { border-color: var(--green); color: var(--green); }
+#btn-watch.active {
+  border-color: var(--green); color: var(--bg); background: var(--green);
+}
+#btn-watch.active::before { content: ''; display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--bg); margin-right: 6px; animation: pulse 1.2s infinite; }
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+.watch-status {
+  font-size: 0.75rem; color: var(--green); margin-right: 0.8rem; white-space: nowrap;
+}
+.watch-status.error { color: var(--red); }
+
+/* ===== Tabs ===== */
+.tabs {
+  display: flex;
+  gap: 0;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 0 1.5rem;
+  flex-shrink: 0;
+}
+.tab {
+  padding: 0.6rem 1.2rem;
+  cursor: pointer;
+  color: var(--text-dim);
+  border-bottom: 2px solid transparent;
+  font-size: 0.9rem;
+  transition: all 0.15s;
+}
+.tab:hover { color: var(--text); }
+.tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+/* ===== Content ===== */
+.content { flex: 1; overflow-y: auto; padding: 1.5rem; }
+.panel { display: none; }
+.panel.active { display: block; }
+
+/* ===== Overview Cards ===== */
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 1.2rem;
+}
+.card .label { font-size: 0.8rem; color: var(--text-dim); margin-bottom: 0.3rem; }
+.card .value { font-size: 1.6rem; font-weight: 700; color: var(--accent); }
+.card .sub { font-size: 0.8rem; color: var(--text-dim); margin-top: 0.3rem; }
+
+/* ===== Tables ===== */
+.table-wrap { overflow-x: auto; }
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+th {
+  text-align: left;
+  padding: 0.6rem 0.8rem;
+  background: var(--surface);
+  color: var(--text-dim);
+  font-weight: 600;
+  position: sticky;
+  top: 0;
+  cursor: pointer;
+  user-select: none;
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+th:hover { color: var(--accent); }
+th .sort-arrow { margin-left: 4px; font-size: 0.7rem; }
+td {
+  padding: 0.5rem 0.8rem;
+  border-bottom: 1px solid var(--border);
+  vertical-align: top;
+}
+tr:hover td { background: var(--surface2); }
+tr.selected td { background: var(--surface); }
+
+.badge {
+  display: inline-block;
+  padding: 0.1rem 0.5rem;
+  border-radius: 3px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+.badge-pro { background: rgba(187,154,247,0.15); color: var(--purple); }
+.badge-standard { background: rgba(122,162,247,0.15); color: var(--accent); }
+.badge-lite { background: rgba(158,206,106,0.15); color: var(--green); }
+.badge-method { background: rgba(224,175,104,0.15); color: var(--yellow); }
+
+.preview {
+  max-width: 300px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--text-dim);
+  font-size: 0.8rem;
+}
+
+/* ===== Detail Panel ===== */
+.detail-panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-top: 2px solid var(--accent);
+  overflow: hidden;
+}
+#call-detail {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: var(--z-detail);
+  box-shadow: 0 -4px 20px rgba(0,0,0,0.5);
+}
+.detail-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.8rem 1rem;
+  background: var(--surface2);
+  border-bottom: 1px solid var(--border);
+}
+.detail-header h3 { font-size: 0.95rem; color: var(--accent); }
+.detail-close {
+  background: none; border: none; color: var(--text-dim);
+  cursor: pointer; font-size: 1.2rem; line-height: 1;
+}
+.detail-close:hover { color: var(--red); }
+.detail-meta {
+  display: flex; gap: 1.5rem; padding: 0.8rem 1rem;
+  font-size: 0.8rem; color: var(--text-dim);
+  border-bottom: 1px solid var(--border);
+  flex-wrap: wrap;
+}
+.detail-meta span strong { color: var(--text); }
+.detail-tabs {
+  display: flex; gap: 0; border-bottom: 1px solid var(--border);
+}
+.detail-tab {
+  padding: 0.5rem 1rem; cursor: pointer; font-size: 0.85rem;
+  color: var(--text-dim); border-bottom: 2px solid transparent;
+}
+.detail-tab:hover { color: var(--text); }
+.detail-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+.btn-copy {
+  margin-left: auto;
+  padding: 0.3rem 0.8rem;
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  align-self: center;
+  transition: all 0.15s;
+}
+.btn-copy:hover { border-color: var(--accent); color: var(--accent); }
+.detail-content {
+  max-height: 40vh;
+  overflow: auto;
+  padding: 1rem;
+}
+.detail-content pre {
+  white-space: pre-wrap;
+  word-break: break-all;
+  font-family: 'Cascadia Code', 'Fira Code', 'JetBrains Mono', Consolas, monospace;
+  font-size: 0.8rem;
+  line-height: 1.5;
+  color: var(--text);
+}
+
+/* ===== Breakdown Tables ===== */
+.breakdown {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+.breakdown h3 {
+  font-size: 0.9rem;
+  color: var(--text-dim);
+  margin-bottom: 0.8rem;
+}
+.bar-row {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  margin-bottom: 0.4rem;
+  font-size: 0.8rem;
+}
+.bar-label { width: 200px; text-align: right; color: var(--text-dim); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bar-track { flex: 1; height: 18px; background: var(--surface2); border-radius: 3px; overflow: hidden; }
+.bar-fill { height: 100%; border-radius: 3px; transition: width 0.3s; }
+.bar-value { width: 80px; font-variant-numeric: tabular-nums; }
+
+/* ===== Timeline ===== */
+.timeline-entry {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.8rem;
+  padding: 0.4rem 0.8rem;
+  border-left: 3px solid var(--border);
+  margin-left: 1rem;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: background 0.1s;
+}
+.timeline-entry:hover { background: var(--surface); }
+.timeline-ts { color: var(--text-dim); font-variant-numeric: tabular-nums; white-space: nowrap; min-width: 90px; }
+.timeline-cat {
+  display: inline-block;
+  width: 100px;
+  font-weight: 600;
+  font-size: 0.75rem;
+}
+.timeline-desc { color: var(--text); flex: 1; }
+.timeline-dur { color: var(--text-dim); white-space: nowrap; min-width: 60px; text-align: right; }
+
+.cat-LLM_CALL { color: var(--accent); border-left-color: var(--accent); }
+.cat-AGENT_EXEC { color: var(--green); border-left-color: var(--green); }
+.cat-TOOL_CALL { color: var(--orange); border-left-color: var(--orange); }
+.cat-WRITER { color: var(--purple); border-left-color: var(--purple); }
+.cat-PLAYER { color: var(--red); border-left-color: var(--red); }
+.cat-COMPRESSION { color: var(--cyan); border-left-color: var(--cyan); }
+.cat-DELTA { color: var(--yellow); border-left-color: var(--yellow); }
+.cat-PREFETCH { color: var(--cyan); border-left-color: var(--cyan); font-style: italic; }
+.cat-SESSION, .cat-GAME_STATE, .cat-ERROR { color: var(--text-dim); }
+
+/* ===== Scrollbar ===== */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-dim); }
+
+/* ===== Toast Notifications ===== */
+#toast-container {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  z-index: var(--z-toast);
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  pointer-events: none;
+}
+.toast {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--green);
+  color: var(--text);
+  padding: 0.6rem 1rem;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+  animation: toastIn 0.25s ease-out, toastOut 0.3s ease-in 3.7s forwards;
+}
+@keyframes toastIn {
+  from { opacity: 0; transform: translateX(20px); }
+  to   { opacity: 1; transform: none; }
+}
+@keyframes toastOut {
+  from { opacity: 1; transform: none; }
+  to   { opacity: 0; transform: translateX(20px); }
+}
+
+/* ===== Timeline New Entry Animation ===== */
+@keyframes entryFadeIn {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: none; }
+}
+.timeline-entry-new {
+  animation: entryFadeIn 0.2s ease-out forwards;
+}
+
+/* ===== File Browser ===== */
+#file-browser {
+  display: none;
+  flex-direction: column;
+  min-height: 100vh;
+}
+#file-browser.active { display: flex; }
+
+.fb-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.8rem 1.5rem;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.fb-header h1 { font-size: 1.1rem; color: var(--accent); }
+.fb-dir-path {
+  font-size: 0.85rem;
+  color: var(--text-dim);
+  margin-left: 1rem;
+  background: var(--surface2);
+  padding: 0.2rem 0.6rem;
+  border-radius: 4px;
+}
+.fb-actions { display: flex; gap: 0.5rem; }
+.fb-btn {
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  padding: 0.3rem 0.8rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  transition: all 0.15s;
+}
+.fb-btn:hover { border-color: var(--accent); color: var(--accent); }
+.fb-btn-primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--bg);
+  font-weight: 600;
+}
+.fb-btn-primary:hover { opacity: 0.85; color: var(--bg); }
+
+.fb-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1.5rem;
+}
+.fb-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+.fb-table th {
+  text-align: left;
+  padding: 0.6rem 0.8rem;
+  background: var(--surface);
+  color: var(--text-dim);
+  font-weight: 600;
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+}
+.fb-table td {
+  padding: 0.6rem 0.8rem;
+  border-bottom: 1px solid var(--border);
+}
+.file-row { cursor: pointer; transition: background 0.1s; }
+.file-row:hover td { background: var(--surface2); }
+.file-name { color: var(--accent); font-weight: 500; }
+.file-size { color: var(--text-dim); white-space: nowrap; width: 100px; text-align: right; }
+.file-date { color: var(--text-dim); white-space: nowrap; width: 180px; }
+
+.fb-empty {
+  text-align: center;
+  color: var(--text-dim);
+  padding: 3rem 1rem;
+}
+
+#drop-zone .dir-pick-section {
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border);
+  text-align: center;
+}
+#drop-zone .dir-pick-section p {
+  font-size: 0.85rem;
+  margin-bottom: 0.8rem;
+}
+#drop-zone .dir-pick-btn {
+  display: inline-block;
+  padding: 0.5rem 1.5rem;
+  background: none;
+  border: 1px solid var(--accent);
+  color: var(--accent);
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.2s;
+}
+#drop-zone .dir-pick-btn:hover {
+  background: var(--accent);
+  color: var(--bg);
+}
+
+/* ===== Reduced Motion ===== */
+@media (prefers-reduced-motion: reduce) {
+  .toast, .timeline-entry-new { animation: none !important; }
+  * { transition-duration: 0.01ms !important; }
+}
+</style>
+</head>
+<body>
+
+<!-- Drop Zone -->
+<div id="drop-zone">
+  <h1>WhatIf Session Log Analyzer</h1>
+  <p>拖拽 .jsonl 日志文件到此处，或点击按钮选择文件</p>
+  <label>选择文件<input type="file" id="file-input" accept=".jsonl,.json,.log"></label>
+  <div class="dir-pick-section" id="dir-pick-section">
+    <p>或选择日志目录，浏览所有会话日志</p>
+    <button class="dir-pick-btn" id="btn-pick-dir">选择日志目录</button>
+  </div>
+</div>
+
+<!-- File Browser -->
+<div id="file-browser">
+  <div class="fb-header">
+    <div style="display:flex;align-items:center;">
+      <h1>WhatIf Log Analyzer</h1>
+      <span class="fb-dir-path" id="fb-dir-path"></span>
+    </div>
+    <div class="fb-actions">
+      <button class="fb-btn" id="btn-refresh-dir">刷新</button>
+      <button class="fb-btn" id="btn-change-dir">更换目录</button>
+    </div>
+  </div>
+  <div class="fb-content">
+    <table class="fb-table">
+      <thead><tr>
+        <th>文件名</th>
+        <th style="text-align:right">大小</th>
+        <th>修改时间</th>
+      </tr></thead>
+      <tbody id="file-list-body"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- App -->
+<div id="app">
+  <header>
+    <h1>WhatIf Log Analyzer</h1>
+    <span class="session-info" id="session-info"></span>
+    <div style="display:flex;align-items:center;">
+      <span class="watch-status" id="watch-status"></span>
+      <button id="btn-watch">监控更新</button>
+      <button id="btn-reload">重新加载</button>
+    </div>
+  </header>
+
+  <div class="tabs">
+    <div class="tab active" data-panel="overview">概览</div>
+    <div class="tab" data-panel="calls">LLM 调用</div>
+    <div class="tab" data-panel="timeline">时间线</div>
+  </div>
+
+  <div class="content">
+    <!-- Overview Panel -->
+    <div class="panel active" id="panel-overview"></div>
+    <!-- Calls Panel -->
+    <div class="panel" id="panel-calls"></div>
+    <!-- Timeline Panel -->
+    <div class="panel" id="panel-timeline"></div>
+  </div>
+  <div id="toast-container"></div>
+</div>
+
+<script>
+// ===== State =====
+let entries = [];
+let llmCalls = [];
+let selectedCallIdx = null;
+let selectedDetailTab = 'prompt';
+
+// ===== File Watch State =====
+let fileHandle = null;       // FileSystemFileHandle (if available)
+let lastFileSize = 0;        // 上次读取的文件大小
+let lastLineCount = 0;       // 上次解析的行数
+let watchInterval = null;    // setInterval ID
+let watchActive = false;
+let timelineAutoScroll = true;
+
+// ===== Directory Handle & Persistence (IndexedDB) =====
+let dirHandle = null;
+const fileBrowser = document.getElementById('file-browser');
+
+const DB_NAME = 'whatif-log-analyzer';
+const DB_VERSION = 1;
+const STORE_NAME = 'settings';
+const DIR_HANDLE_KEY = 'dirHandle';
+
+function openDB() {
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open(DB_NAME, DB_VERSION);
+    req.onupgradeneeded = () => req.result.createObjectStore(STORE_NAME);
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+async function saveDirHandle(handle) {
+  const db = await openDB();
+  const tx = db.transaction(STORE_NAME, 'readwrite');
+  tx.objectStore(STORE_NAME).put(handle, DIR_HANDLE_KEY);
+  return new Promise(r => { tx.oncomplete = r; });
+}
+
+async function loadSavedDirHandle() {
+  const db = await openDB();
+  const tx = db.transaction(STORE_NAME, 'readonly');
+  const req = tx.objectStore(STORE_NAME).get(DIR_HANDLE_KEY);
+  return new Promise(r => { req.onsuccess = () => r(req.result || null); });
+}
+
+function showView(view) {
+  dropZone.style.display = view === 'drop' ? '' : 'none';
+  fileBrowser.classList.toggle('active', view === 'browser');
+  app.classList.toggle('active', view === 'app');
+}
+
+async function pickDirectory() {
+  try {
+    const handle = await window.showDirectoryPicker({ mode: 'read' });
+    dirHandle = handle;
+    await saveDirHandle(handle);
+    showView('browser');
+    await refreshFileList();
+  } catch (err) {
+    if (err.name !== 'AbortError') console.error('pickDirectory:', err);
+  }
+}
+
+async function refreshFileList() {
+  const listEl = document.getElementById('file-list-body');
+  const pathEl = document.getElementById('fb-dir-path');
+  if (!dirHandle) return;
+
+  pathEl.textContent = dirHandle.name;
+  listEl.innerHTML = '<tr><td colspan="3" class="fb-empty">加载中...</td></tr>';
+
+  let perm = await dirHandle.queryPermission({ mode: 'read' });
+  if (perm === 'prompt') {
+    perm = await dirHandle.requestPermission({ mode: 'read' });
+  }
+  if (perm !== 'granted') {
+    listEl.innerHTML = '<tr><td colspan="3" class="fb-empty">目录访问被拒绝，请重新选择目录</td></tr>';
+    return;
+  }
+
+  const files = [];
+  try {
+    for await (const [name, handle] of dirHandle) {
+      if (handle.kind !== 'file') continue;
+      if (!name.endsWith('.jsonl') && !name.endsWith('.json') && !name.endsWith('.log')) continue;
+      const file = await handle.getFile();
+      files.push({ name, handle, size: file.size, lastModified: file.lastModified });
+    }
+  } catch (err) {
+    listEl.innerHTML = `<tr><td colspan="3" class="fb-empty" style="color:var(--red)">读取目录失败: ${escapeHtml(err.message)}</td></tr>`;
+    return;
+  }
+
+  files.sort((a, b) => b.lastModified - a.lastModified);
+
+  if (files.length === 0) {
+    listEl.innerHTML = '<tr><td colspan="3" class="fb-empty">目录中没有日志文件 (.jsonl / .json / .log)</td></tr>';
+    return;
+  }
+
+  listEl.innerHTML = files.map((f, i) => {
+    const date = new Date(f.lastModified);
+    const dateStr = date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
+    const sizeStr = f.size > 1024 * 1024 ? (f.size / 1024 / 1024).toFixed(1) + ' MB'
+      : f.size > 1024 ? (f.size / 1024).toFixed(1) + ' KB' : f.size + ' B';
+    return `<tr class="file-row" data-file-idx="${i}">
+      <td class="file-name">${escapeHtml(f.name)}</td>
+      <td class="file-size">${sizeStr}</td>
+      <td class="file-date">${dateStr}</td>
+    </tr>`;
+  }).join('');
+
+  listEl.querySelectorAll('.file-row').forEach(row => {
+    row.addEventListener('click', async () => {
+      const idx = parseInt(row.dataset.fileIdx);
+      const f = files[idx];
+      fileHandle = f.handle;
+      const file = await f.handle.getFile();
+      loadFile(file);
+    });
+  });
+}
+
+// File browser buttons
+document.getElementById('btn-refresh-dir').addEventListener('click', refreshFileList);
+document.getElementById('btn-change-dir').addEventListener('click', pickDirectory);
+if (document.getElementById('btn-pick-dir')) {
+  document.getElementById('btn-pick-dir').addEventListener('click', pickDirectory);
+}
+
+// ===== File Loading =====
+const dropZone = document.getElementById('drop-zone');
+const fileInput = document.getElementById('file-input');
+const app = document.getElementById('app');
+
+dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('dragover'); });
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+dropZone.addEventListener('drop', async e => {
+  e.preventDefault();
+  dropZone.classList.remove('dragover');
+  // 尝试获取 FileSystemFileHandle（支持后续 re-read）
+  if (e.dataTransfer.items && e.dataTransfer.items[0]) {
+    const item = e.dataTransfer.items[0];
+    if (item.getAsFileSystemHandle) {
+      try {
+        const handle = await item.getAsFileSystemHandle();
+        if (handle.kind === 'file') {
+          fileHandle = handle;
+          const file = await handle.getFile();
+          loadFile(file);
+          return;
+        }
+      } catch {}
+    }
+  }
+  // 降级：普通 File 对象（不支持 watch）
+  fileHandle = null;
+  if (e.dataTransfer.files.length) loadFile(e.dataTransfer.files[0]);
+});
+fileInput.addEventListener('change', () => {
+  fileHandle = null; // input 无法获取 handle
+  if (fileInput.files.length) loadFile(fileInput.files[0]);
+});
+document.getElementById('btn-reload').addEventListener('click', () => {
+  stopWatch();
+  fileHandle = null;
+  fileInput.value = '';
+  if (dirHandle) {
+    showView('browser');
+    refreshFileList();
+  } else {
+    showView('drop');
+  }
+});
+
+// 监控更新按钮
+document.getElementById('btn-watch').addEventListener('click', () => {
+  if (watchActive) { stopWatch(); }
+  else { startWatch(); }
+});
+
+function loadFile(file) {
+  const reader = new FileReader();
+  reader.onload = () => {
+    entries = [];
+    const text = reader.result;
+    lastFileSize = file.size; // 用字节数，和 file.size 一致
+    const lines = text.split('\n');
+    // 不计末尾空字符串（JSONL 以 \n 结尾时 split 会产生）
+    lastLineCount = (lines.length > 0 && lines[lines.length - 1] === '') ? lines.length - 1 : lines.length;
+    for (const line of lines) {
+      const trimmed = line.trim();
+      if (!trimmed) continue;
+      try { entries.push(JSON.parse(trimmed)); } catch {}
+    }
+    if (!entries.length) { alert('无法解析日志文件'); return; }
+    processEntries();
+    showView('app');
+    timelineAutoScroll = true;
+    renderOverview();
+    renderCalls();
+    renderTimeline();
+    updateWatchButton();
+    // Track scroll position for auto-scroll feature
+    document.querySelector('.content').addEventListener('scroll', () => {
+      if (!document.getElementById('panel-timeline').classList.contains('active')) return;
+      const el = document.querySelector('.content');
+      timelineAutoScroll = (el.scrollHeight - el.scrollTop - el.clientHeight) < 120;
+    }, { passive: true });
+  };
+  reader.readAsText(file, 'utf-8');
+}
+
+// ===== File Watch =====
+function startWatch() {
+  if (!fileHandle) {
+    setWatchStatus('需要拖拽文件以启用监控（文件选择器不支持）', true);
+    return;
+  }
+  watchActive = true;
+  timelineAutoScroll = true;
+  updateWatchButton();
+  setWatchStatus('监控中...');
+  watchInterval = setInterval(pollFileChanges, 2000);
+}
+
+function stopWatch() {
+  watchActive = false;
+  if (watchInterval) { clearInterval(watchInterval); watchInterval = null; }
+  updateWatchButton();
+  setWatchStatus('');
+}
+
+function updateWatchButton() {
+  const btn = document.getElementById('btn-watch');
+  btn.classList.toggle('active', watchActive);
+  btn.textContent = watchActive ? '停止监控' : '监控更新';
+  // 无 handle 时显示提示
+  if (!fileHandle && !watchActive) {
+    btn.title = '需要通过拖拽文件加载才能启用监控';
+  } else {
+    btn.title = '';
+  }
+}
+
+function setWatchStatus(text, isError = false) {
+  const el = document.getElementById('watch-status');
+  el.textContent = text;
+  el.className = 'watch-status' + (isError ? ' error' : '');
+}
+
+async function pollFileChanges() {
+  if (!fileHandle) { stopWatch(); return; }
+  try {
+    const file = await fileHandle.getFile();
+    if (file.size === lastFileSize) return; // 无变化
+    if (file.size < lastFileSize) {
+      // 文件被截断/重写，全量重新加载
+      lastFileSize = 0;
+      lastLineCount = 0;
+      entries = [];
+    }
+    const text = await file.text();
+    const allLines = text.split('\n');
+    // 仅解析新增行
+    const newLines = allLines.slice(lastLineCount);
+    let newCount = 0;
+    for (const line of newLines) {
+      const trimmed = line.trim();
+      if (!trimmed) continue;
+      try { entries.push(JSON.parse(trimmed)); newCount++; } catch {}
+    }
+    lastFileSize = file.size; // 用字节数，和 file.size 一致
+    // 不计末尾空字符串
+    lastLineCount = (allLines.length > 0 && allLines[allLines.length - 1] === '') ? allLines.length - 1 : allLines.length;
+    if (newCount > 0) {
+      processEntries();
+      renderOverview();
+      renderCalls();
+      // Restore detail panel if it was open before re-render
+      if (selectedCallIdx !== null && llmCalls[selectedCallIdx]) {
+        renderCallDetail(llmCalls[selectedCallIdx]);
+      }
+      renderTimeline(entries.length - newCount);
+      // Auto-scroll timeline if user is near bottom
+      if (timelineAutoScroll && document.getElementById('panel-timeline').classList.contains('active')) {
+        const content = document.querySelector('.content');
+        content.scrollTop = content.scrollHeight;
+      }
+      setWatchStatus(`已追加 ${newCount} 条 (${new Date().toLocaleTimeString()})`);
+      showToast(`已追加 ${newCount} 条新日志`);
+    }
+  } catch (err) {
+    setWatchStatus(`读取失败: ${err.message}`, true);
+  }
+}
+
+// ===== Processing =====
+function processEntries() {
+  // Parse timestamps and compute durations
+  for (let i = 0; i < entries.length; i++) {
+    const e = entries[i];
+    e._ts = new Date(e.ts);
+    e._idx = i;
+    if (i < entries.length - 1) {
+      const next = new Date(entries[i + 1].ts);
+      e._duration = (next - e._ts) / 1000;
+    } else {
+      e._duration = 0;
+    }
+  }
+  // Extract LLM_CALL + WRITER entries (unified "calls" view)
+  // Normalize WRITER entries to have the same fields as LLM_CALL
+  for (const e of entries) {
+    if (e.cat === 'WRITER') {
+      if (!e.prompt_len) e.prompt_len = e.prompt ? e.prompt.length : 0;
+      if (!e.response_len) e.response_len = e.output ? e.output.length : 0;
+      if (!e.method) e.method = 'generate';  // Writers always use generate (streaming)
+      if (!e.response) e.response = e.output || '';
+      e._isWriter = true;
+      e._writerType = e.writer_type || 'unknown';
+    }
+  }
+  llmCalls = entries.filter(e => e.cat === 'LLM_CALL' || e.cat === 'WRITER');
+  // Compute call durations: glog 在调用完成后记录，所以耗时 = 当前 ts - 上一条 ts
+  for (let i = 0; i < llmCalls.length; i++) {
+    const idx = llmCalls[i]._idx;
+    if (idx > 0) {
+      llmCalls[i]._callDuration = (llmCalls[i]._ts - entries[idx - 1]._ts) / 1000;
+    } else {
+      llmCalls[i]._callDuration = 0;
+    }
+  }
+  // Session info
+  const sessionEntry = entries.find(e => e.cat === 'SESSION' && e.action === 'start');
+  const sessionId = sessionEntry ? sessionEntry.session_id : 'Unknown';
+  const startTs = entries[0]._ts;
+  const endTs = entries[entries.length - 1]._ts;
+  const totalSec = (endTs - startTs) / 1000;
+  document.getElementById('session-info').textContent =
+    `${sessionId} | ${formatTime(startTs)} ~ ${formatTime(endTs)} | 总时长 ${formatDuration(totalSec)}`;
+}
+
+// ===== Render: Overview =====
+function renderOverview() {
+  const panel = document.getElementById('panel-overview');
+  const rawCalls = llmCalls.filter(c => !c._isWriter);
+  const totalPromptTokens = rawCalls.reduce((s, c) => s + (c.prompt_len || 0), 0);
+  const totalResponseTokens = rawCalls.reduce((s, c) => s + (c.response_len || 0), 0);
+  const totalTokens = totalPromptTokens + totalResponseTokens;
+  const totalDuration = llmCalls.reduce((s, c) => s + c._callDuration, 0);
+  const sessionDuration = (entries[entries.length - 1]._ts - entries[0]._ts) / 1000;
+
+  // Model breakdown
+  const byModel = {};
+  for (const c of llmCalls) {
+    const m = c.model || 'unknown';
+    if (!byModel[m]) byModel[m] = { count: 0, promptTokens: 0, responseTokens: 0, duration: 0 };
+    byModel[m].count++;
+    byModel[m].promptTokens += c.prompt_len || 0;
+    byModel[m].responseTokens += c.response_len || 0;
+    byModel[m].duration += c._callDuration;
+  }
+
+  // Category breakdown
+  const byCat = {};
+  for (const e of entries) {
+    byCat[e.cat] = (byCat[e.cat] || 0) + 1;
+  }
+
+  // Method breakdown
+  const byMethod = {};
+  for (const c of llmCalls) {
+    const m = c.method || 'unknown';
+    if (!byMethod[m]) byMethod[m] = { count: 0, tokens: 0 };
+    byMethod[m].count++;
+    byMethod[m].tokens += (c.prompt_len || 0) + (c.response_len || 0);
+  }
+
+  panel.innerHTML = `
+    <div class="cards">
+      <div class="card">
+        <div class="label">LLM 调用次数</div>
+        <div class="value">${llmCalls.length}</div>
+        <div class="sub">LLM_CALL: ${llmCalls.filter(c=>!c._isWriter).length} / Writer: ${llmCalls.filter(c=>c._isWriter).length}</div>
+      </div>
+      <div class="card">
+        <div class="label">总 Token 消耗</div>
+        <div class="value">${formatNum(totalTokens)}</div>
+        <div class="sub">输入 ${formatNum(totalPromptTokens)} / 输出 ${formatNum(totalResponseTokens)}</div>
+      </div>
+      <div class="card">
+        <div class="label">LLM 调用耗时</div>
+        <div class="value">${formatDuration(totalDuration)}</div>
+        <div class="sub">Session 总时长: ${formatDuration(sessionDuration)}</div>
+      </div>
+      <div class="card">
+        <div class="label">平均每次调用</div>
+        <div class="value">${llmCalls.length ? (totalTokens / llmCalls.length).toFixed(0) : 0} tok</div>
+        <div class="sub">平均耗时: ${llmCalls.length ? (totalDuration / llmCalls.length).toFixed(1) : 0}s</div>
+      </div>
+    </div>
+
+    <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+      <div class="breakdown">
+        <h3>按模型分布</h3>
+        ${renderBarChart(byModel, 'count', llmCalls.length, e =>
+          `${e.count} 次 | ${formatNum(e.promptTokens + e.responseTokens)} tok | ${formatDuration(e.duration)}`)}
+      </div>
+      <div class="breakdown">
+        <h3>按日志类别分布</h3>
+        ${renderBarChart(byCat, null, entries.length, v => `${v} 条`)}
+      </div>
+    </div>
+
+    <div class="breakdown">
+      <h3>按模型 Token 消耗</h3>
+      ${renderBarChart(byModel, 'promptTokens+responseTokens', totalTokens, e =>
+        `输入 ${formatNum(e.promptTokens)} + 输出 ${formatNum(e.responseTokens)} = ${formatNum(e.promptTokens + e.responseTokens)}`,
+        true)}
+    </div>
+  `;
+}
+
+function renderBarChart(data, countField, total, labelFn, useTokens = false) {
+  const sorted = Object.entries(data).sort((a, b) => {
+    const va = countField === 'promptTokens+responseTokens'
+      ? (a[1].promptTokens + a[1].responseTokens)
+      : (countField ? a[1][countField] : a[1]);
+    const vb = countField === 'promptTokens+responseTokens'
+      ? (b[1].promptTokens + b[1].responseTokens)
+      : (countField ? b[1][countField] : b[1]);
+    return vb - va;
+  });
+  const colors = [
+    'var(--accent)', 'var(--purple)', 'var(--green)',
+    'var(--orange)', 'var(--cyan)', 'var(--yellow)', 'var(--red)'
+  ];
+  return sorted.map(([key, val], i) => {
+    const count = countField === 'promptTokens+responseTokens'
+      ? val.promptTokens + val.responseTokens
+      : (countField ? val[countField] : val);
+    const pct = total ? (count / total * 100) : 0;
+    const shortKey = key.replace('volcengine/', '').replace('xai/', '');
+    const label = labelFn(val);
+    return `<div class="bar-row">
+      <span class="bar-label" title="${key}">${shortKey}</span>
+      <div class="bar-track"><div class="bar-fill" style="width:${pct}%;background:${colors[i % colors.length]}"></div></div>
+      <span class="bar-value">${label}</span>
+    </div>`;
+  }).join('');
+}
+
+// ===== Render: Calls Table =====
+let callSortCol = 0;
+let callSortAsc = true;
+
+function renderCalls() {
+  const panel = document.getElementById('panel-calls');
+  panel.innerHTML = `
+    <div class="table-wrap">
+      <table id="calls-table">
+        <thead><tr>
+          <th data-col="0"># <span class="sort-arrow"></span></th>
+          <th data-col="1">时间戳 <span class="sort-arrow"></span></th>
+          <th data-col="2">耗时 <span class="sort-arrow"></span></th>
+          <th data-col="3">模型 <span class="sort-arrow"></span></th>
+          <th data-col="4">方法 <span class="sort-arrow"></span></th>
+          <th data-col="5">输入 Token <span class="sort-arrow"></span></th>
+          <th data-col="6">输出 Token <span class="sort-arrow"></span></th>
+          <th>Prompt 预览</th>
+        </tr></thead>
+        <tbody id="calls-tbody"></tbody>
+      </table>
+    </div>
+    <div id="call-detail"></div>
+  `;
+  document.querySelectorAll('#calls-table th[data-col]').forEach(th => {
+    th.addEventListener('click', () => {
+      const col = parseInt(th.dataset.col);
+      if (callSortCol === col) callSortAsc = !callSortAsc;
+      else { callSortCol = col; callSortAsc = true; }
+      fillCallsTable();
+    });
+  });
+  fillCallsTable();
+}
+
+function fillCallsTable() {
+  const sorted = [...llmCalls].sort((a, b) => {
+    let va, vb;
+    switch (callSortCol) {
+      case 0: va = a._idx; vb = b._idx; break;
+      case 1: va = a._ts; vb = b._ts; break;
+      case 2: va = a._callDuration; vb = b._callDuration; break;
+      case 3: va = a.model || ''; vb = b.model || ''; break;
+      case 4: va = a.method || ''; vb = b.method || ''; break;
+      case 5: va = a.prompt_len || 0; vb = b.prompt_len || 0; break;
+      case 6: va = a.response_len || 0; vb = b.response_len || 0; break;
+      default: va = a._idx; vb = b._idx;
+    }
+    if (typeof va === 'string') return callSortAsc ? va.localeCompare(vb) : vb.localeCompare(va);
+    return callSortAsc ? va - vb : vb - va;
+  });
+
+  const tbody = document.getElementById('calls-tbody');
+  tbody.innerHTML = sorted.map((c, i) => {
+    const model = (c.model || '').replace('volcengine/', '').replace('xai/', '').replace('dashscope/', '');
+    const tier = model.includes('pro') ? 'pro' : model.includes('mini') ? 'lite' : 'standard';
+    const preview = (c.prompt || '').slice(0, 80).replace(/</g, '&lt;').replace(/\n/g, ' ');
+    const idx = llmCalls.indexOf(c);
+    const writerTag = c._isWriter
+      ? `<span class="badge" style="background:var(--purple);color:var(--bg);margin-right:4px;font-size:0.65rem">${c._writerType}</span>`
+      : '';
+    return `<tr data-call-idx="${idx}" class="${selectedCallIdx === idx ? 'selected' : ''}">
+      <td>${idx + 1}</td>
+      <td style="white-space:nowrap">${formatTime(c._ts)}</td>
+      <td style="white-space:nowrap">${c._callDuration.toFixed(1)}s</td>
+      <td><span class="badge badge-${tier}">${model}</span></td>
+      <td>${writerTag}<span class="badge badge-method">${c.method || ''}</span></td>
+      <td style="text-align:right">${formatNum(c.prompt_len || 0)}</td>
+      <td style="text-align:right">${formatNum(c.response_len || 0)}</td>
+      <td><div class="preview">${preview}</div></td>
+    </tr>`;
+  }).join('');
+
+  tbody.querySelectorAll('tr').forEach(tr => {
+    tr.addEventListener('click', () => {
+      const idx = parseInt(tr.dataset.callIdx);
+      selectedCallIdx = idx;
+      tbody.querySelectorAll('tr').forEach(r => r.classList.remove('selected'));
+      tr.classList.add('selected');
+      renderCallDetail(llmCalls[idx]);
+    });
+  });
+}
+
+function getCallDetailContent(call, tab) {
+  if (tab === 'prompt') return call.prompt || '(empty)';
+  if (tab === 'response') {
+    let text = call.response || '(empty)';
+    try { text = JSON.stringify(JSON.parse(text), null, 2); } catch {}
+    return text;
+  }
+  if (tab === 'writer-input') {
+    const input = call.input;
+    if (!input || typeof input !== 'object') return '(no input data)';
+    // Render structured fields: short fields as key=value, long fields as labeled blocks
+    const lines = [];
+    for (const [key, val] of Object.entries(input)) {
+      if (val === null || val === undefined || val === '') continue;
+      const strVal = typeof val === 'object' ? JSON.stringify(val, null, 2) : String(val);
+      if (strVal.length <= 120 && !strVal.includes('\n')) {
+        lines.push(`[${key}] ${strVal}`);
+      } else {
+        lines.push(`\n━━━ ${key} ━━━\n${strVal}`);
+      }
+    }
+    return lines.join('\n') || '(empty input)';
+  }
+  return '(unknown tab)';
+}
+
+function renderCallDetail(call) {
+  const detail = document.getElementById('call-detail');
+  const isWriter = !!call._isWriter;
+
+  // Reset tab if current tab doesn't exist for this call type
+  if (selectedDetailTab === 'writer-input' && !isWriter) selectedDetailTab = 'prompt';
+
+  const initialContent = getCallDetailContent(call, selectedDetailTab);
+  const callLabel = isWriter ? `Writer(${call._writerType})` : 'LLM 调用';
+  const writerInputTab = isWriter
+    ? `<div class="detail-tab ${selectedDetailTab === 'writer-input' ? 'active' : ''}" data-dtab="writer-input">Writer 输入数据</div>`
+    : '';
+
+  detail.innerHTML = `
+    <div class="detail-panel">
+      <div class="detail-header">
+        <h3>${callLabel} #${llmCalls.indexOf(call) + 1} 详情</h3>
+        <button class="detail-close" id="detail-close">&times;</button>
+      </div>
+      <div class="detail-meta">
+        <span><strong>时间:</strong> ${formatTime(call._ts)}</span>
+        <span><strong>模型:</strong> ${call.model || 'N/A'}</span>
+        <span><strong>Provider:</strong> ${call.provider || 'N/A'}</span>
+        <span><strong>方法:</strong> ${call.method || 'N/A'}</span>
+        <span><strong>温度:</strong> ${call.temperature ?? 'N/A'}</span>
+        <span><strong>Thinking:</strong> ${call.thinking_budget ?? 0}</span>
+        <span><strong>输入:</strong> ${formatNum(call.prompt_len || 0)} chars</span>
+        <span><strong>输出:</strong> ${formatNum(call.response_len || 0)} chars</span>
+        <span><strong>耗时:</strong> ${call._callDuration.toFixed(1)}s</span>
+      </div>
+      <div class="detail-tabs">
+        <div class="detail-tab ${selectedDetailTab === 'prompt' ? 'active' : ''}" data-dtab="prompt">输入 Prompt</div>
+        <div class="detail-tab ${selectedDetailTab === 'response' ? 'active' : ''}" data-dtab="response">输出 Response</div>
+        ${writerInputTab}
+        <button class="btn-copy" id="btn-copy">复制</button>
+      </div>
+      <div class="detail-content">
+        <pre id="detail-text">${escapeHtml(initialContent)}</pre>
+      </div>
+    </div>
+  `;
+
+  document.querySelector('.content').style.paddingBottom = '50vh';
+
+  document.getElementById('detail-close').addEventListener('click', closeCallDetail);
+
+  detail.querySelectorAll('.detail-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      selectedDetailTab = tab.dataset.dtab;
+      detail.querySelectorAll('.detail-tab').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      document.getElementById('detail-text').textContent = getCallDetailContent(call, selectedDetailTab);
+    });
+  });
+
+  document.getElementById('btn-copy').addEventListener('click', (e) => {
+    const text = document.getElementById('detail-text').textContent;
+    navigator.clipboard.writeText(text).then(() => {
+      e.target.textContent = '已复制';
+      setTimeout(() => { e.target.textContent = '复制'; }, 1500);
+    });
+  });
+}
+
+// ===== Render: Timeline =====
+function renderTimeline(animateFrom = -1) {
+  const panel = document.getElementById('panel-timeline');
+  const html = entries.map((e, i) => {
+    const cat = e.cat || 'UNKNOWN';
+    const dur = e._duration;
+    const desc = getTimelineDesc(e);
+    const newClass = (animateFrom >= 0 && i >= animateFrom) ? ' timeline-entry-new' : '';
+    return `<div class="timeline-entry cat-${cat}${newClass}" data-entry-idx="${i}">
+      <span class="timeline-ts">${formatTime(e._ts)}</span>
+      <span class="timeline-cat">${cat}</span>
+      <span class="timeline-desc">${desc}</span>
+      <span class="timeline-dur">${dur > 0.05 ? dur.toFixed(1) + 's' : ''}</span>
+    </div>`;
+  }).join('');
+
+  panel.innerHTML = html + '<div id="timeline-detail"></div>';
+
+  panel.querySelectorAll('.timeline-entry').forEach(el => {
+    el.addEventListener('click', () => {
+      const idx = parseInt(el.dataset.entryIdx);
+      const entry = entries[idx];
+      renderTimelineDetail(entry);
+    });
+  });
+}
+
+function getTimelineDesc(e) {
+  switch (e.cat) {
+    case 'SESSION': return `Session ${e.action} (${e.session_id || ''})`;
+    case 'GAME_STATE': return `${e.action} ${e.event_id || e.player || ''}`;
+    case 'PLAYER': return `[${e.phase}] ${(e.input || '').slice(0, 60)}`;
+    case 'LLM_CALL': {
+      const m = (e.model || '').replace('volcengine/', '').replace('xai/', '').replace('dashscope/', '');
+      return `${e.method} | ${m} | ${formatNum(e.prompt_len||0)} → ${formatNum(e.response_len||0)} tok`;
+    }
+    case 'AGENT_EXEC': {
+      if (e.step === 'tool_loop_round')
+        return `${e.agent} round ${e.round}: [${(e.tool_calls||[]).join(', ')}]`;
+      if (e.action === 'generation_complete')
+        return `${e.agent} ${e.phase} complete | tools: [${(e.tools_called||[]).join(', ')}]`;
+      return `${e.agent} ${e.action || e.step || ''}`;
+    }
+    case 'TOOL_CALL': return `${e.agent} → ${e.tool} ${e.query || e.text || e.event_id || ''}`.slice(0, 80);
+    case 'WRITER': {
+      const m = (e.model || '').replace('dashscope/', '');
+      const outLen = e.output ? e.output.length : 0;
+      return `${e.writer_type} writer | ${m} | ${formatNum(outLen)} chars`;
+    }
+    case 'PREFETCH': return `${e.action} ${e.target || ''} ${e.error || ''}`;
+    case 'COMPRESSION': return `${e.action} | ${e.event_id || ''} | ${e.summary_len || 0} chars`;
+    case 'DELTA': return `${e.action} ${e.fact || e.event_id || ''}`.slice(0, 80);
+    case 'ERROR': return `${e.agent || ''} ${e.error || ''}`.slice(0, 80);
+    default: return JSON.stringify(e).slice(0, 80);
+  }
+}
+
+function renderTimelineDetail(entry) {
+  const detail = document.getElementById('timeline-detail');
+  const json = JSON.stringify(entry, (key, val) => {
+    // Truncate very long strings for readability
+    if (key === '_ts') return undefined;
+    if (key === '_idx') return undefined;
+    if (key === '_duration') return undefined;
+    if (key === '_callDuration') return undefined;
+    return val;
+  }, 2);
+
+  detail.innerHTML = `
+    <div class="detail-panel" style="margin-top:1rem;">
+      <div class="detail-header">
+        <h3>${entry.cat} 详情 (#${entry._idx + 1})</h3>
+        <button class="detail-close" onclick="document.getElementById('timeline-detail').innerHTML=''">&times;</button>
+      </div>
+      <div class="detail-content">
+        <pre>${escapeHtml(json)}</pre>
+      </div>
+    </div>
+  `;
+}
+
+// ===== Tab Switching =====
+document.querySelectorAll('.tabs .tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.tabs .tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById('panel-' + tab.dataset.panel).classList.add('active');
+  });
+});
+
+// ===== Utilities =====
+function formatTime(d) {
+  if (!(d instanceof Date)) d = new Date(d);
+  return d.toTimeString().slice(0, 8) + '.' + String(d.getMilliseconds()).padStart(3, '0');
+}
+function formatDuration(sec) {
+  if (sec < 60) return sec.toFixed(1) + 's';
+  const m = Math.floor(sec / 60);
+  const s = (sec % 60).toFixed(0);
+  return `${m}m ${s}s`;
+}
+function formatNum(n) { return n.toLocaleString(); }
+function escapeHtml(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function showToast(message) {
+  const container = document.getElementById('toast-container');
+  const toast = document.createElement('div');
+  toast.className = 'toast';
+  toast.textContent = message;
+  container.appendChild(toast);
+  setTimeout(() => toast.remove(), 4000);
+}
+
+function closeCallDetail() {
+  const detail = document.getElementById('call-detail');
+  if (!detail || !detail.innerHTML) return;
+  detail.innerHTML = '';
+  selectedCallIdx = null;
+  selectedDetailTab = 'prompt';
+  document.querySelectorAll('#calls-tbody tr').forEach(r => r.classList.remove('selected'));
+  document.querySelector('.content').style.paddingBottom = '';
+}
+
+// ===== Keyboard Shortcuts =====
+document.addEventListener('keydown', e => {
+  // Escape: close detail panel
+  if (e.key === 'Escape') {
+    closeCallDetail();
+    return;
+  }
+
+  // Arrow keys: navigate LLM calls (only when Calls panel is active and a call is selected)
+  const callsPanelActive = document.getElementById('panel-calls')?.classList.contains('active');
+  if (!callsPanelActive || selectedCallIdx === null) return;
+
+  if (e.key === 'ArrowUp' && selectedCallIdx > 0) {
+    e.preventDefault();
+    selectedCallIdx--;
+  } else if (e.key === 'ArrowDown' && selectedCallIdx < llmCalls.length - 1) {
+    e.preventDefault();
+    selectedCallIdx++;
+  } else {
+    return;
+  }
+
+  // Update selection highlight
+  document.querySelectorAll('#calls-tbody tr').forEach(r => {
+    r.classList.toggle('selected', parseInt(r.dataset.callIdx) === selectedCallIdx);
+  });
+  // Scroll selected row into view
+  const targetRow = document.querySelector(`#calls-tbody tr[data-call-idx="${selectedCallIdx}"]`);
+  targetRow?.scrollIntoView({ block: 'nearest' });
+  // Update detail panel
+  renderCallDetail(llmCalls[selectedCallIdx]);
+});
+
+// ===== Init: Restore Persisted Directory =====
+(async function init() {
+  if (!window.showDirectoryPicker) {
+    // File System Access API not available — hide directory pick button
+    const section = document.getElementById('dir-pick-section');
+    if (section) section.remove();
+    return;
+  }
+  try {
+    const saved = await loadSavedDirHandle();
+    if (!saved) return;
+
+    const perm = await saved.queryPermission({ mode: 'read' });
+    if (perm === 'granted') {
+      dirHandle = saved;
+      showView('browser');
+      await refreshFileList();
+      return;
+    }
+    // Permission needs user gesture — show file browser with auth prompt
+    dirHandle = saved;
+    showView('browser');
+    document.getElementById('fb-dir-path').textContent = saved.name;
+    const listEl = document.getElementById('file-list-body');
+    listEl.innerHTML = `<tr><td colspan="3" class="fb-empty">
+      <p style="margin-bottom:0.8rem;">需要重新授权访问目录 <strong>${escapeHtml(saved.name)}</strong></p>
+      <button class="fb-btn fb-btn-primary" id="btn-grant-perm">点击授权</button>
+    </td></tr>`;
+    document.getElementById('btn-grant-perm').addEventListener('click', async () => {
+      const p = await dirHandle.requestPermission({ mode: 'read' });
+      if (p === 'granted') await refreshFileList();
+    });
+  } catch (err) {
+    console.error('init:', err);
+  }
+})();
+</script>
+</body>
+</html>

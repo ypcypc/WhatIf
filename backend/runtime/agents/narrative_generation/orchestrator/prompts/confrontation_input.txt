@@ -1,0 +1,23 @@
+<input>
+<phase_source>{phase_source}</phase_source>
+<event_context>
+  <setup_narrative>{setup_narrative}</setup_narrative>
+  <confrontation_history>{confrontation_history}</confrontation_history>
+  <delta_state>
+    <active_deltas>{active_deltas}</active_deltas>
+    <already_activated>{already_activated}</already_activated>
+    <pending_echo>{pending_echo}</pending_echo>
+    <archived_overrides>{archived_overrides}</archived_overrides>
+  </delta_state>
+</event_context>
+<previous_event>{previous_event}</previous_event>
+<player_input>{player_input}</player_input>
+<event_meta>
+  <event_id>{event_id}</event_id>
+  <importance>{importance}</importance>
+  <goal>{goal}</goal>
+  <soft_guide_hints>{soft_guide_hints}</soft_guide_hints>
+  <event_type>{event_type}</event_type>
+  <preconditions>{preconditions}</preconditions>
+</event_meta>
+</input>

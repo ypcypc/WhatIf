@@ -1,0 +1,74 @@
+extractors:
+  event_extractor:
+    model: dashscope/qwen3.5-plus
+    thinking_budget: 3000
+
+  lorebook_extractor:
+    model: dashscope/qwen3.5-flash
+
+  decision_text_extractor:
+    model: dashscope/qwen3.5-plus
+
+  necessity_grader:
+    model: dashscope/qwen3.5-plus
+    thinking_budget: 3000
+
+  transition_annotator:
+    model: dashscope/qwen3.5-plus
+    thinking_budget: 3000
+
+  cross_validator:
+    model: dashscope/qwen3.5-plus
+    thinking_budget: 3000
+
+  repairer:
+    model: dashscope/qwen3.5-plus
+    thinking_budget: 3000
+
+agents:
+  unified_writer:
+    model: dashscope/qwen3.5-plus
+    temperature: 0.7
+    thinking_budget: 64
+
+  setup_orchestrator:
+    model: dashscope/qwen3.5-flash
+    temperature: 0.3
+    thinking_budget: 256
+
+  confrontation_orchestrator:
+    model: dashscope/qwen3.5-flash
+    temperature: 0.3
+    thinking_budget: 256
+
+  resolution_orchestrator:
+    model: dashscope/qwen3.5-flash
+    temperature: 0.3
+    thinking_budget: 256
+
+  bridge_planner:
+    model: dashscope/qwen3.5-flash
+    temperature: 0.3
+
+  deviation_controller:
+    model: dashscope/qwen3.5-flash
+    thinking_budget: 128
+
+  l0_recall_agent:
+    model: dashscope/qwen3.5-flash
+
+  l1_recall_agent:
+    model: dashscope/qwen3.5-flash
+
+  entity_recognizer_agent:
+    model: dashscope/qwen3.5-flash
+    temperature: 0.1
+
+  l0_compressor:
+    model: dashscope/qwen3.5-flash
+
+  l1_compressor:
+    model: dashscope/qwen3.5-flash
+
+  scene_adapter:
+    model: dashscope/qwen3.5-flash

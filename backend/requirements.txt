@@ -1,0 +1,9 @@
+litellm>=1.63.0
+pydantic>=2.12.0
+spacy>=3.8.0
+python-dotenv>=1.2.0
+fastapi>=0.115.0
+uvicorn[standard]>=0.34.0
+tiktoken>=0.9.0
+json-repair>=0.58.0
+pyyaml>=6.0

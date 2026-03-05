@@ -1,0 +1,498 @@
+<system>
+你是一个叙事必要性与颗粒度分析器。
+你的任务分两步：
+  Step A: 判断每个候选实体是否为事件 goal 达成所必需
+  Step B: 对每个必要实体，判断其颗粒度（named 或 functional）
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Step A: 必要性判断（反事实测试）
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+对每个候选实体，回答：
+"如果这个实体完全不存在，事件的 goal 还能达成吗？"
+  · 仍能达成 → 不必要
+  · 不能达成 → 必要
+
+各类型的替代问法：
+  · 角色："如果这个角色完全不存在，goal 还能达成吗？"
+  · 物品："如果没有任何此类工具（赤手空拳），goal 还能达成吗？"
+    注意：先判断是否需要工具辅助，再判断是否需要这个特定工具。
+    如果赤手空拳也能完成 goal → 物品不必要。
+  · 信息："如果这条信息从未存在过，goal 还能达成吗？"
+  · 地点："如果把事件搬到一个完全不同的地点，goal 还能达成吗？"
+    - 对话/传递消息/谈判 → 任何地点都行 → 地点不必要
+    - 利用地形/接触只存在于此的东西 → 地点必要
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Step B: 颗粒度判断（替代性测试）
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+仅对 Step A 中判定为"必要"的实体执行此步。
+
+核心问题：
+"如果用另一个同类实体替代这个实体，后续事件中引用
+该实体的内容还能成立吗？"
+  · 不能替代（后续按身份引用）→ named
+  · 可以替代（只需功能角色）→ functional
+
+具体操作：
+  1. 向前看（forward scan）：扫描该实体之后的所有事件
+  2. 检查后续事件是否以名字引用了这个具体实体
+  3. 如果有引用 → named（身份绑定的因果链）
+  4. 如果没有引用，只需要该功能角色 → functional（类型绑定的因果链）
+
+各类型的替代问法：
+  · 角色："换一个人来做这件事，后续剧情还能成立吗？"
+  · 物品："换一个同类工具，后续剧情还能成立吗？"
+  · 信息："换一条不同的信息，后续剧情还能成立吗？"
+  · 地点："换一个地点，后续剧情还能成立吗？"
+
+【50% 阈值规则】
+如果一个实体在部分后续事件中按名字引用、部分不引用：
+  · 统计：按名字引用的事件数 / 该实体出现的总事件数
+  · > 50% → named
+  · ≤ 50% → functional
+
+【信息实体的颗粒度倾向】
+信息实体默认倾向于 named。因为信息的内容即身份——
+"真凶是赫尔佐格"和"真凶是另一个人"是完全不同的信息，
+会导致完全不同的后续剧情。
+只有在信息内容确实可替换（如"有人在监视"，具体是谁
+在监视不影响后续）时，才标注为 functional。
+
+【理论背景】
+这一区分源自叙事学中 actor（具名实体）与 actant（功能角色）
+的经典分离（Greimas, 1966）。named 实体是不可替换的 actor，
+functional 实体是可替换的 actant。
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+严格排除规则
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+以下内容即使在候选列表中出现，也必须排除：
+  · 能力/力量/状态变化（不是实体，由 Delta State 管理）
+  · 纯粹的环境描写中的物品（不参与 goal 达成）
+  · 只是被提及但不参与事件的角色
+</system>
+
+<examples>
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+示例 1: 包含对话、物品传递和信息获取的复合事件
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+【事件】
+{
+  "event_id": "E003",
+  "decision_text": "三叔来访，韩立获得七玄门入门机会",
+  "goal": "了解七玄门招收弟子的机会，并获得家人同意前往",
+  "description": "韩立从山中归家，发现三叔来访。三叔介绍七玄门每月一两散银的待遇，韩父犹豫后同意韩立前往。"
+}
+
+【后续事件概览】
+E004: 韩立与三叔赴青牛镇
+E005: 韩立到达七玄门参加入门测试
+E006: 韩立通过测试成为杂役弟子
+
+【候选实体】
+- 韩立 (character)
+- 三叔 (character)
+- 韩父 (character)
+- 韩母 (character)
+- 七玄门招收弟子的消息 (information)
+- 韩立家中 (location)
+
+【分析过程】
+
+角色·韩立:
+  Step A: 如果韩立不存在，没有人可以"获得入门机会"。→ 必要
+  Step B: 韩立在 E004-E006 中始终以名字被引用，是主角。
+    后续引用: E004("韩立与三叔赴青牛镇"), E005("韩立参加测试"), E006("韩立成为弟子")
+    引用率: 3/3 = 100% > 50% → named
+
+角色·三叔:
+  Step A: 如果三叔不存在，没有人带来七玄门的消息，goal 无法达成。→ 必要
+  Step B: E004 中"韩立与三叔赴青牛镇"按名字引用了三叔。
+    但 E005、E006 中三叔不再出场。
+    引用率: 1/2 = 50% ≤ 50% → functional
+    换一个亲戚来带路，后续剧情仍可成立。
+
+角色·韩父:
+  Step A: goal 包含"获得家人同意"，韩父是做出同意决定的人。→ 必要
+  Step B: 韩父在 E004 之后不再出场，后续事件不按名字引用他。
+    引用率: 0/1 = 0% ≤ 50% → functional
+    换成韩母做决定，后续剧情也成立。
+
+角色·韩母:
+  Step A: 韩母在事件中只是在场，没有做出关键决策。
+    如果韩母不存在，韩父仍可同意 → 不必要
+
+信息·七玄门招收弟子的消息:
+  Step A: 如果这条消息不存在，韩立不会知道入门机会 → 必要
+  Step B: 信息实体默认 named。
+    后续 E005 的入门测试直接引用了"七玄门"这一具体门派。
+    如果替换为"另一个门派在招人"，后续所有事件都不成立。 → named
+
+地点·韩立家中:
+  Step A: "了解消息并获得同意"是对话性质，搬到任何地点都可以达成。
+    → 不必要
+
+【输出】
+{
+  "event_id": "E003",
+  "reasoning": [
+    {
+      "entity": "韩立",
+      "type": "character",
+      "step_a_counterfactual": "如果韩立不存在，没有人可以获得入门机会，goal无法达成",
+      "necessary": true,
+      "step_b_substitution": "韩立是主角，后续所有事件都按名字引用他，无法替代",
+      "granularity": "named",
+      "forward_references": ["E004: 韩立与三叔赴青牛镇", "E005: 韩立参加入门测试", "E006: 韩立成为杂役弟子"]
+    },
+    {
+      "entity": "三叔",
+      "type": "character",
+      "step_a_counterfactual": "如果三叔不存在，没有人带来七玄门消息，goal无法达成",
+      "necessary": true,
+      "step_b_substitution": "三叔仅在E004中被引用，之后不再出场。换一个亲戚带路，后续剧情成立",
+      "granularity": "functional",
+      "forward_references": ["E004: 韩立与三叔赴青牛镇"]
+    },
+    {
+      "entity": "韩父",
+      "type": "character",
+      "step_a_counterfactual": "goal要求获得家人同意，韩父是决策者，如果不存在则无人做决定",
+      "necessary": true,
+      "step_b_substitution": "韩父在后续事件中不再出场，换成另一个家长做决定，后续不受影响",
+      "granularity": "functional",
+      "forward_references": []
+    },
+    {
+      "entity": "韩母",
+      "type": "character",
+      "step_a_counterfactual": "韩母只是在场旁听，不做关键决策，去掉她goal仍可达成",
+      "necessary": false,
+      "step_b_substitution": null,
+      "granularity": null,
+      "forward_references": []
+    },
+    {
+      "entity": "七玄门招收弟子的消息",
+      "type": "information",
+      "step_a_counterfactual": "如果这条消息不存在，韩立无从知晓入门机会，goal无法达成",
+      "necessary": true,
+      "step_b_substitution": "后续E005入门测试直接引用七玄门，替换为另一个门派会导致后续不成立",
+      "granularity": "named",
+      "forward_references": ["E005: 七玄门入门测试"]
+    },
+    {
+      "entity": "韩立家中",
+      "type": "location",
+      "step_a_counterfactual": "这是一个对话场景，搬到另一个地点goal仍可达成",
+      "necessary": false,
+      "step_b_substitution": null,
+      "granularity": null,
+      "forward_references": []
+    }
+  ],
+  "necessary_entities": {
+    "characters": [
+      {"name": "韩立", "granularity": "named"},
+      {"name": "三叔", "granularity": "functional"},
+      {"name": "韩父", "granularity": "functional"}
+    ],
+    "items": [],
+    "information": [
+      {"name": "七玄门招收弟子的消息", "granularity": "named"}
+    ],
+    "locations": []
+  }
+}
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+示例 2: 包含物品使用、地形依赖和能力排除的事件
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+【事件】
+{
+  "event_id": "E008",
+  "decision_text": "韩立攀爬炼骨崖通过入门测试",
+  "goal": "在正午前到达炼骨崖顶，通过七玄门入门测试",
+  "description": "岳堂主宣布测试在炼骨崖进行。韩立体力不支多次险些坠落，一名师兄递给他一根绳索，韩立最终到达崖顶。"
+}
+
+【后续事件概览】
+E009: 韩立被分配为杂役弟子
+E010: 墨大夫选中韩立为药童
+
+【候选实体】
+- 韩立 (character)
+- 岳堂主 (character)
+- 师兄 (character)
+- 绳索 (item)
+- 韩立的毅力 (能力/状态 — 候选)
+- 炼骨崖 (location)
+
+【分析过程】
+
+角色·韩立: 必要，named（同上理由）
+
+角色·岳堂主:
+  Step A: 岳堂主宣布测试规则，没有他就没有测试 → 必要
+  Step B: E009 中"岳堂主宣布分配结果"再次按名字引用。
+    引用率: 1/2 = 50% ≤ 50% → functional
+    换一个长老来宣布，后续不受影响。
+
+角色·师兄:
+  Step A: 师兄给了绳索帮助韩立登顶，但韩立"凭借毅力"也在尝试。
+    如果师兄不存在，韩立是否能独自登顶？描述说"多次险些坠落"——
+    绳索是关键援助。没有师兄的帮助，韩立可能无法到达崖顶。 → 必要
+  Step B: 后续事件中没有再提到这位师兄。
+    引用率: 0/1 = 0% → functional
+    换成另一个人递绳子，后续不受影响。
+
+物品·绳索:
+  Step A: 如果没有任何工具（赤手空拳），韩立多次险些坠落，
+    绳索是完成攀爬的关键辅助。 → 必要
+  Step B: 后续事件从未提到这根绳索。
+    换一根藤蔓或铁链，后续不受影响。 → functional
+
+候选·韩立的毅力:
+  ⚠️ 排除——"毅力"是角色状态/属性，不是实体。
+  无法用"X由Y持有"或"X在Y处"表达。
+  由 Delta State 管理，不在此处追踪。
+
+地点·炼骨崖:
+  Step A: 测试要求攀爬悬崖地形，如果搬到平地就不是同一个测试了。
+    地形是 goal 的核心要素。 → 必要
+  Step B: E009 之后不再提到炼骨崖。
+    引用率: 0/1 = 0% → functional
+    换成另一处悬崖做测试，后续不受影响。
+
+【输出】
+{
+  "event_id": "E008",
+  "reasoning": [
+    {
+      "entity": "韩立",
+      "type": "character",
+      "step_a_counterfactual": "没有韩立就没有人参加测试",
+      "necessary": true,
+      "step_b_substitution": "主角，后续始终引用",
+      "granularity": "named",
+      "forward_references": ["E009: 韩立被分配", "E010: 墨大夫选中韩立"]
+    },
+    {
+      "entity": "岳堂主",
+      "type": "character",
+      "step_a_counterfactual": "岳堂主宣布测试，没有他则测试无法开始",
+      "necessary": true,
+      "step_b_substitution": "后续只在E009宣布分配时出现，引用率50%，换人不影响",
+      "granularity": "functional",
+      "forward_references": ["E009: 岳堂主宣布分配结果"]
+    },
+    {
+      "entity": "师兄",
+      "type": "character",
+      "step_a_counterfactual": "韩立多次险些坠落，师兄递绳索是关键援助，没有他韩立可能无法登顶",
+      "necessary": true,
+      "step_b_substitution": "后续从未提到该师兄，换成另一个人递绳子完全不影响",
+      "granularity": "functional",
+      "forward_references": []
+    },
+    {
+      "entity": "绳索",
+      "type": "item",
+      "step_a_counterfactual": "赤手空拳攀爬已多次险些坠落，绳索是登顶的关键工具",
+      "necessary": true,
+      "step_b_substitution": "后续不再提到绳索，换成藤蔓或铁链不影响后续",
+      "granularity": "functional",
+      "forward_references": []
+    },
+    {
+      "entity": "韩立的毅力",
+      "type": "排除",
+      "step_a_counterfactual": "这是能力/状态属性，不是实体。由Delta State管理。",
+      "necessary": false,
+      "step_b_substitution": null,
+      "granularity": null,
+      "forward_references": []
+    },
+    {
+      "entity": "炼骨崖",
+      "type": "location",
+      "step_a_counterfactual": "测试要求攀爬悬崖地形，搬到平地则goal不同",
+      "necessary": true,
+      "step_b_substitution": "后续不再提到炼骨崖，换成另一处悬崖不影响后续",
+      "granularity": "functional",
+      "forward_references": []
+    }
+  ],
+  "necessary_entities": {
+    "characters": [
+      {"name": "韩立", "granularity": "named"},
+      {"name": "岳堂主", "granularity": "functional"},
+      {"name": "师兄", "granularity": "functional"}
+    ],
+    "items": [
+      {"name": "绳索", "granularity": "functional"}
+    ],
+    "information": [],
+    "locations": [
+      {"name": "炼骨崖", "granularity": "functional"}
+    ]
+  }
+}
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+示例 3: 包含信息传递和 named 信息的事件
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+【事件】
+{
+  "event_id": "E015",
+  "decision_text": "李飞宇告诉韩立墨大夫的真实身份",
+  "goal": "韩立得知墨大夫将弟子作为炼药鼎炉的秘密",
+  "description": "李飞宇重伤濒死，将墨大夫利用弟子作为炼药鼎炉的秘密告诉韩立。韩立同时获得了李飞宇的一本残缺功法书。"
+}
+
+【后续事件概览】
+E016: 韩立暗中提防墨大夫
+E017: 韩立修炼残缺功法
+E020: 韩立借助功法对抗墨大夫
+
+【候选实体】
+- 韩立 (character)
+- 李飞宇 (character)
+- 墨大夫的秘密 (information)
+- 残缺功法书 (item)
+- 墨大夫的居所 (location)
+
+【分析过程】
+
+信息·墨大夫的秘密:
+  Step A: 这条信息就是 goal 本身——"得知秘密"。没有它 goal 无法达成。 → 必要
+  Step B: 信息默认倾向 named。E016"韩立暗中提防墨大夫"直接基于这条具体秘密。
+    如果替换为"墨大夫在偷钱"，后续"提防炼药鼎炉"完全不成立。 → named
+
+物品·残缺功法书:
+  Step A: goal 是"得知秘密"，功法书是额外收获，不影响 goal 达成。
+    但是——功法书是否影响 goal？不影响，goal 只要求"得知秘密"。 → 不必要
+    ⚠️ 注意：虽然功法书在后续 E017、E020 中很重要，
+    但在本事件中它不是 goal 的必要条件。
+
+角色·李飞宇:
+  Step A: 没有李飞宇，就没有人告诉韩立秘密。 → 必要
+  Step B: E016-E020 从未再提到李飞宇（他已死亡）。
+    引用率: 0 → functional
+
+地点·墨大夫的居所:
+  Step A: 信息传递场景，搬到任何地点 goal 仍可达成。 → 不必要
+
+【输出】
+{
+  "event_id": "E015",
+  "reasoning": [
+    {
+      "entity": "韩立",
+      "type": "character",
+      "step_a_counterfactual": "没有韩立则无人接收信息",
+      "necessary": true,
+      "step_b_substitution": "主角，后续始终引用",
+      "granularity": "named",
+      "forward_references": ["E016", "E017", "E020"]
+    },
+    {
+      "entity": "李飞宇",
+      "type": "character",
+      "step_a_counterfactual": "没有李飞宇则无人传递秘密",
+      "necessary": true,
+      "step_b_substitution": "李飞宇在此事件后死亡，后续不再出现，换成另一个濒死的弟子后续不受影响",
+      "granularity": "functional",
+      "forward_references": []
+    },
+    {
+      "entity": "墨大夫的秘密",
+      "type": "information",
+      "step_a_counterfactual": "这条信息就是goal本身，没有它goal无法达成",
+      "necessary": true,
+      "step_b_substitution": "后续E016基于'炼药鼎炉'这一具体内容行动，替换为其他秘密则后续不成立",
+      "granularity": "named",
+      "forward_references": ["E016: 韩立暗中提防墨大夫的炼药鼎炉计划"]
+    },
+    {
+      "entity": "残缺功法书",
+      "type": "item",
+      "step_a_counterfactual": "goal是得知秘密，功法书是额外收获，去掉它goal仍可达成",
+      "necessary": false,
+      "step_b_substitution": null,
+      "granularity": null,
+      "forward_references": []
+    },
+    {
+      "entity": "墨大夫的居所",
+      "type": "location",
+      "step_a_counterfactual": "信息传递场景，搬到任何地点goal仍可达成",
+      "necessary": false,
+      "step_b_substitution": null,
+      "granularity": null,
+      "forward_references": []
+    }
+  ],
+  "necessary_entities": {
+    "characters": [
+      {"name": "韩立", "granularity": "named"},
+      {"name": "李飞宇", "granularity": "functional"}
+    ],
+    "items": [],
+    "information": [
+      {"name": "墨大夫的秘密", "granularity": "named"}
+    ],
+    "locations": []
+  }
+}
+
+</examples>
+
+<input>
+事件列表（含 goal）：
+{events_json}
+
+候选实体列表：
+{candidates_json}
+
+对于每个事件的每个候选实体，请写出：
+1. 反事实推理（Step A）
+2. 必要性结论：必要 / 非必要
+3. 如果必要，替代性推理（Step B）
+4. 颗粒度结论：named / functional
+
+输出 JSON 格式：
+{
+  "events": [
+    {
+      "event_id": "...",
+      "reasoning": [
+        {
+          "entity": "实体名",
+          "type": "character | item | information | location",
+          "step_a_counterfactual": "如果...不存在，...",
+          "necessary": true/false,
+          "step_b_substitution": "如果换成另一个同类..." 或 null,
+          "granularity": "named" / "functional" / null,
+          "forward_references": ["后续事件中以名字引用的证据"] 或 []
+        }
+      ],
+      "necessary_entities": {
+        "characters": [{"name": "...", "granularity": "..."}],
+        "items": [{"name": "...", "granularity": "..."}],
+        "information": [{"name": "...", "granularity": "..."}],
+        "locations": [{"name": "...", "granularity": "..."}]
+      }
+    }
+  ]
+}
+</input>

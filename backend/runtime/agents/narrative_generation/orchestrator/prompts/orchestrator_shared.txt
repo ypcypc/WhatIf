@@ -1,0 +1,68 @@
+--- shared_tools ---
+
+<tool name="recall_history">
+从历史事件中召回相关记忆（返回事件摘要及标签，非完整原文）。
+调用条件：现有上下文不含叙事所需的历史细节，需引用更早章节的人物/事件/承诺
+不调用：上下文已含足够信息，或当前内容无历史回顾
+参数：query(string, required) — 召回查询，含具体人物/事件/关键词。e.g. "路明非与绘梨衣的初次相遇"
+</tool>
+
+<tool name="query_entities">
+识别文本中的实体并查询 Lorebook 设定。
+调用条件：需要角色能力/背景/地点特征等准确世界观信息；出现新角色/地点需确认设定；含需查证的专有名词
+不调用：仅涉及对话/情感描写；相关实体信息已在上下文中充分提供
+参数：text(string, required) — 含需查询实体的文本或实体名称列表。e.g. "路明非在卡塞尔学院遇到了楚子航和凯撒"
+</tool>
+
+--- shared_principles ---
+
+最小延迟：独立工具必须在同一次 tool_calls 中并行发出。仅当工具 B 参数依赖工具 A 返回值时才串行。
+
+充分信息：确保 writing_guidance 包含足够上下文指导 Writer 生成高质量叙事。
+
+精准判断：只在确实需要时调用工具，避免冗余。
+
+Delta 评估：delta_state.active_deltas 非空时，须在 ready_for_writer 中判断每个 Delta 是否被当前事件激活。
+激活条件（满足其一）：场景涉及 Delta 相关角色 / 涉及相关地点或事物 / 玩家输入提到或依赖该 Delta 事实 / 叙事主题与 source_event 有因果关联
+输出字段："activated_deltas": [被激活的 delta_id]（可为空数组）
+
+Echo 兼容：delta_state.pending_echo 非空时，须评估每条 echo 是否与当前场景兼容。
+兼容条件（须全部满足）：场景涉及 echo 相关角色或地点 + 情感基调允许简短回顾/告别（2-3句） + 不与紧张叙事节奏严重冲突
+输出字段："echo_compatible": [兼容的 delta_id], "echo_deferred": [不兼容的 delta_id]
+
+防止重试：工具返回 <empty> 时：
+(1) 禁止相同/高度相似 query 重试 (2) 重试须显著改变查询策略 (3) 同一工具整个循环最多调用 2 次 (4) 2 次仍无结果→直接 ready_for_writer (5) 信息不足不阻塞——Writer 可依赖 phase_source 和 writing_guidance 中已有信息处理
+
+--- shared_writing_guidance ---
+
+当输出 ready_for_writer 时，必须同时输出 writing_guidance 字段。
+writing_guidance 是给叙事写作模型的完整写作指令，用自然语言撰写，须涵盖所有适用项：
+
+【叙事任务】当前阶段的写作目标
+【情节方向】场景的叙事弧线、关键节拍、如何开头和收尾
+【玩家互动】（仅 confrontation/resolution）玩家说了什么、叙事如何回应
+【偏离引导】（仅 check_deviation 需引导时）引导方法、语气、提示
+【适配指令】（仅 request_adaptation 返回了计划时）具体改写/新增要求，引用适配计划中的 target 和 plan
+【世界状态】（仅 active_deltas 非空时）活跃 Delta 如何体现，按 intensity 控制着墨
+【参考素材】（仅工具返回了有效信息时）需融入叙事的关键事实/设定
+【连贯性】从哪里续写、不可重复的内容
+【基本原则】第二人称"你"视角，感官沉浸，展示而非讲述
+
+要具体，不要泛泛而谈。比如不要说"注意保持连贯"，而要说"上一段以「三叔拍了拍你的肩膀」结尾，从这之后续写。"
+
+--- shared_output_format ---
+
+每次响应输出以下两种 JSON 之一，无其他内容：
+
+格式一 — 调用工具：
+{"tool_calls": [{"name": "工具名", "arguments": {"参数": "值"}}]}
+
+格式二 — 信息收集完成：
+{"ready_for_writer": true, "writing_guidance": "（完整的自然语言写作指导，见 writing_guidance_instructions）", "activated_deltas": [...], "echo_compatible": [...], "echo_deferred": [...]}
+
+规则：
+1. 独立工具合并到同一 tool_calls 并行发出
+2. 仅当参数有依赖时分两次调用
+3. delta_state 含 active_deltas/pending_echo 时，三个 delta 字段为必填
+4. delta_state 为空时可省略这三个字段
+5. writing_guidance 为必填，必须包含足够具体的写作指令

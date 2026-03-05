@@ -1,0 +1,371 @@
+@import 'tailwindcss';
+@import './tokens.css';
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  background: #08070a;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+.gameplay-shell {
+  position: relative;
+  min-height: 100vh;
+  padding: 0;
+  display: grid;
+  place-items: stretch;
+  overflow: hidden;
+}
+
+.background-layer {
+  position: absolute;
+  inset: 0;
+  background-image: var(--bg-overlay), var(--bg-image);
+  background-size: cover;
+  background-position: center;
+}
+
+.surface {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  display: grid;
+  gap: 14px;
+}
+
+.gameplay-surface-shell {
+  width: 100vw;
+  height: 100vh;
+  place-items: stretch;
+}
+
+.surface-content {
+  position: relative;
+  z-index: 1;
+  width: min(100%, 980px);
+  margin: 0 auto;
+  height: 100%;
+  display: grid;
+  align-content: start;
+  grid-template-rows: auto 1fr auto;
+  gap: 14px;
+  padding: 14px;
+}
+
+.surface-card {
+  border: 1px solid var(--border);
+  background: var(--surface);
+  box-shadow: 0 20px 48px rgba(2, 2, 3, 0.42);
+}
+
+.story-shell {
+  position: relative;
+  height: min(75vh, 830px);
+  overflow: hidden;
+  backdrop-filter: blur(16px) brightness(0.85);
+  -webkit-backdrop-filter: blur(16px) brightness(0.85);
+  background: var(--surface-story);
+}
+
+.story-scroll {
+  height: min(75vh, 830px);
+  overflow-y: auto;
+  border-radius: 20px;
+  padding: 22px 20px calc(120px + env(safe-area-inset-bottom));
+  mask-image: var(--viewport-mask);
+  -webkit-mask-image: var(--viewport-mask);
+}
+
+.story-copy {
+  margin: 0;
+  color: #d4cbbf;
+  font-size: 16px;
+  line-height: 1.8;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+.story-copy strong {
+  color: var(--text-primary);
+  font-weight: 600;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.7);
+}
+
+.story-copy-player {
+  border-left: 3px solid rgba(196, 163, 90, 0.6);
+  background: rgba(196, 163, 90, 0.08);
+  border-radius: 12px;
+  padding: 10px 12px;
+  color: #e8dfd0;
+  line-height: 1.55;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.story-copy-error {
+  border-left: 3px solid rgba(255, 120, 120, 0.8);
+  color: #ffc6c6;
+}
+
+.story-divider {
+  border: none;
+  height: 1px;
+  background: linear-gradient(
+    to right,
+    transparent,
+    rgba(196, 163, 90, 0.18) 20%,
+    rgba(196, 163, 90, 0.18) 80%,
+    transparent
+  );
+  margin: 12px 0;
+}
+
+.story-generating {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-secondary);
+  font-style: italic;
+  margin-top: 8px;
+}
+
+.generating-dots {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.generating-dots i {
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--text-secondary);
+  animation: pulse-dot 1.1s infinite ease-in-out;
+}
+
+.generating-dots i:nth-child(2) {
+  animation-delay: 0.18s;
+}
+
+.generating-dots i:nth-child(3) {
+  animation-delay: 0.36s;
+}
+
+@keyframes pulse-dot {
+  0%,
+  100% {
+    opacity: 0.35;
+    transform: translateY(0);
+  }
+  50% {
+    opacity: 1;
+    transform: translateY(-2px);
+  }
+}
+
+.command-bar {
+  position: sticky;
+  bottom: calc(12px + env(safe-area-inset-bottom));
+  z-index: 3;
+}
+
+.composer-shell {
+  bottom: calc(8px + env(safe-area-inset-bottom));
+}
+
+/* ===== Start Page ===== */
+
+.start-container {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  min-height: 100vh;
+  padding: 20px;
+}
+
+.start-title {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-size: 48px;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: 0.02em;
+  text-shadow: 0 0 40px rgba(196, 163, 90, 0.3);
+}
+
+/* ===== 故事条目入场动画 ===== */
+
+@keyframes entry-appear {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.story-entry-appear {
+  animation: entry-appear 0.35s ease-out both;
+}
+
+/* ===== 骨架屏 ===== */
+
+.skeleton-line {
+  height: 16px;
+  border-radius: 4px;
+  background: linear-gradient(
+    90deg,
+    rgba(196, 163, 90, 0.05) 25%,
+    rgba(196, 163, 90, 0.1) 50%,
+    rgba(196, 163, 90, 0.05) 75%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.5s ease-in-out infinite;
+}
+
+@keyframes skeleton-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* ===== 生成状态 shimmer ===== */
+
+.generating-bar {
+  position: sticky;
+  bottom: calc(12px + env(safe-area-inset-bottom));
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 56px;
+  overflow: hidden;
+}
+
+.generating-shimmer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--action-accent),
+    transparent
+  );
+  background-size: 200% 100%;
+  animation: shimmer-slide 2s linear infinite;
+}
+
+@keyframes shimmer-slide {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* ===== 开始页面动画 ===== */
+
+.start-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 48px 56px;
+  animation: start-card-enter 0.8s ease-out both;
+}
+
+@keyframes start-card-enter {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.start-subtitle {
+  margin: 0;
+  font-size: 15px;
+  color: var(--text-secondary);
+  animation: start-card-enter 0.8s ease-out 0.2s both;
+}
+
+.start-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 20px;
+  width: 100%;
+  animation: start-card-enter 0.6s ease-out 0.4s both;
+}
+
+.background-layer-animated {
+  animation: bg-drift 30s ease-in-out infinite alternate;
+}
+
+@keyframes bg-drift {
+  from { transform: scale(1.0); }
+  to { transform: scale(1.05); }
+}
+
+/* ===== 页面过渡 ===== */
+
+.page-transition {
+  transition: opacity 0.3s ease;
+}
+
+.page-fade-out {
+  opacity: 0;
+}
+
+/* ===== Jump to latest 入场 ===== */
+
+.jump-to-latest {
+  position: absolute;
+  right: 16px;
+  bottom: 14px;
+  z-index: 2;
+  border: 1px solid var(--border-hover);
+  background: rgba(14, 11, 8, 0.88);
+  color: var(--text-primary);
+  border-radius: 999px;
+  padding: 8px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  backdrop-filter: blur(6px);
+  cursor: pointer;
+  animation: jump-btn-enter 0.25s ease-out;
+}
+
+@keyframes jump-btn-enter {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ===== 无障碍：减弱动效 ===== */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

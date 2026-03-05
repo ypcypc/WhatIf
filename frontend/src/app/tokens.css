@@ -1,0 +1,25 @@
+:root {
+  /* 字体 */
+  --font-body: 'Noto Sans SC', system-ui, sans-serif;
+  --font-heading: 'Noto Serif SC', serif;
+
+  /* 背景 */
+  --bg-image: url('/gameplay-background.webp');
+  --bg-overlay: linear-gradient(180deg, rgba(8, 7, 10, 0.08) 0%, rgba(3, 3, 4, 0.34) 84%);
+
+  /* 鎏金配色 */
+  --text-primary: #ede6db;
+  --text-secondary: #8c8279;
+  --action-accent: #c4a35a;
+
+  /* 表面与边框 */
+  --surface: rgba(18, 14, 8, 0.62);
+  --surface-story: rgba(18, 14, 8, 0.82);
+  --border: rgba(196, 163, 90, 0.18);
+  --border-hover: rgba(196, 163, 90, 0.32);
+
+  /* 布局 */
+  --surface-max-width: 791px;
+  --viewport-mask:
+    linear-gradient(to bottom, transparent 0%, black 8%, black 82%, transparent 100%);
+}

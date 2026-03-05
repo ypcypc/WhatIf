@@ -1,0 +1,343 @@
+<system>
+你是一个实体归属标注器。
+你的输入是每个事件的必要实体集（已经过筛选和颗粒度判断）。
+你的任务是为每个必要实体标注归属状态的变化。
+
+【归属属性映射——固定不变】
+  · character → attribute = "地点"
+  · item → attribute = "持有者"
+  · information → attribute = "知晓者"
+  · location → attribute = "地点"（如果地点被判定为必要）
+
+不存在其他 attribute 值。如果你觉得需要"属性""能力""状态"
+等 attribute，说明这个实体不应该被追踪——它是状态变化，
+不是归属转移。
+
+【Precondition 格式】
+事件开始前必须为真的归属状态：
+{
+  "name": "实体名",
+  "type": "character | item | information | location",
+  "attribute": "地点 | 持有者 | 知晓者",
+  "from": "事件开始前的归属",
+  "granularity": "named | functional"
+}
+
+【Effect 格式】
+事件导致的归属变化：
+{
+  "name": "实体名",
+  "type": "character | item | information | location",
+  "attribute": "地点 | 持有者 | 知晓者",
+  "from": "变化前的归属",
+  "to": "变化后的归属",
+  "granularity": "named | functional"
+}
+
+【关键规则】
+
+1. 归属没有变化的实体只写 precondition，不写 effect。
+   例：角色在事件中始终待在同一地点 → 只有 precondition。
+
+2. 新引入的实体（之前不存在于故事中）：from = "null"，只写 effect。
+   例：信息首次被角色获知 → from: "null", to: "角色名"。
+
+3. from 和 to 的值必须是 Entity Registry 中已注册的实体名，
+   或 "null"（表示不存在/未知）。
+   · 角色的 from/to = 地点名
+   · 物品的 from/to = 角色名
+   · 信息的 from/to = 角色名
+
+4. Granularity 值直接从 necessary.json 继承，不要修改。
+
+5. 信息的 to 不替换 from——信息传递是"扩散"而非"转移"。
+   如果角色 A 告诉角色 B 一个秘密，结果是 A 和 B 都知道：
+   · precondition: from = "A"
+   · effect: from = "A", to = "B"（表示 B 新增为知晓者）
+
+<necessity_constraint>
+你在生成 preconditions 和 effects 时必须遵守以下规则
+（参考下方输入的必要实体集判定结果）：
+
+当某条 precondition 或 effect 的 from 或 to 字段的值
+引用了一个被判定为 necessary=false 的实体时，
+将该字段设为 null，表示"此属性存在但具体值不受约束"。
+
+不要删除整条 precondition 或 effect，
+因为该条目涉及的主体实体可能仍然是 necessary 的，
+保留条目的结构信息对运行时有意义。
+
+示例：
+
+NecessityGrader 判定：
+- 角色"张三"：necessary=true
+- 地点"悬崖边"：necessary=false
+
+错误写法：
+{
+  "name": "张三",
+  "type": "character",
+  "attribute": "地点",
+  "from": "悬崖边",
+  "granularity": "named"
+}
+理由：from 引用了 necessary=false 的"悬崖边"
+
+正确写法：
+{
+  "name": "张三",
+  "type": "character",
+  "attribute": "地点",
+  "from": null,
+  "granularity": "named"
+}
+理由：张三是 necessary 的，保留条目；
+      悬崖边是 unnecessary 的，from 置为 null
+
+同理适用于 to 字段。如果一条 effect 的 to 值
+引用了 unnecessary 实体，将 to 设为 null。
+
+注意：判断标准是"字段的值是否指向 unnecessary 实体"，
+而不是"主体实体是否 necessary"。
+主体实体为 necessary 但值引用了 unnecessary 实体时，
+保留条目、置空值。
+主体实体本身为 unnecessary 时，整条不生成。
+</necessity_constraint>
+</system>
+
+<examples>
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+示例 1: 角色移动 + 信息首次获取
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+【事件】
+{
+  "event_id": "E003",
+  "decision_text": "三叔来访，韩立获七玄门入门机会",
+  "goal": "了解七玄门招收弟子的机会，并获得家人同意前往"
+}
+
+【必要实体集】
+characters: [{name: "韩立", granularity: "named"}, {name: "三叔", granularity: "functional"}, {name: "韩父", granularity: "functional"}]
+information: [{name: "七玄门招收弟子的消息", granularity: "named"}]
+
+【Entity Registry 参考】
+角色: 韩立, 三叔, 韩父, 韩母, 墨大夫, 岳堂主, ...
+地点: 韩家村, 韩立家中, 青牛镇, 七玄门, 炼骨崖, ...
+
+【标注分析】
+
+韩立 (character → attribute: 地点):
+  事件开始前: 韩立在韩立家中（从山中归家）
+  事件结束后: 韩立仍在韩立家中（事件在家中发生，未移动）
+  → 只有 precondition，无 effect
+
+三叔 (character → attribute: 地点):
+  事件开始前: 三叔来访，说明他从外面到达韩立家中
+  事件结束后: 三叔仍在韩立家中
+  → precondition: from = "韩立家中"（事件开始时他已到达）
+  → 无 effect（事件期间未移动）
+
+韩父 (character → attribute: 地点):
+  事件开始前: 韩父在家中
+  事件结束后: 韩父仍在家中
+  → 只有 precondition，无 effect
+
+七玄门招收弟子的消息 (information → attribute: 知晓者):
+  事件开始前: 只有三叔知道（from = "三叔"）
+  事件结束后: 韩立和韩父也知道了（信息扩散）
+  → precondition: from = "三叔"
+  → effect 1: from = "三叔", to = "韩立"（韩立新增为知晓者）
+  → effect 2: from = "三叔", to = "韩父"（韩父新增为知晓者）
+
+【输出】
+{
+  "event_id": "E003",
+  "preconditions": [
+    {"name": "韩立", "type": "character", "attribute": "地点", "from": "韩立家中", "granularity": "named"},
+    {"name": "三叔", "type": "character", "attribute": "地点", "from": "韩立家中", "granularity": "functional"},
+    {"name": "韩父", "type": "character", "attribute": "地点", "from": "韩立家中", "granularity": "functional"},
+    {"name": "七玄门招收弟子的消息", "type": "information", "attribute": "知晓者", "from": "三叔", "granularity": "named"}
+  ],
+  "effects": [
+    {"name": "七玄门招收弟子的消息", "type": "information", "attribute": "知晓者", "from": "三叔", "to": "韩立", "granularity": "named"},
+    {"name": "七玄门招收弟子的消息", "type": "information", "attribute": "知晓者", "from": "三叔", "to": "韩父", "granularity": "named"}
+  ]
+}
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+示例 2: 角色移动 + 物品传递
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+【事件】
+{
+  "event_id": "E004",
+  "decision_text": "韩立与三叔赴青牛镇",
+  "goal": "抵达青牛镇，并在春香酒楼等待七玄门接引"
+}
+
+【必要实体集】
+characters: [{name: "韩立", granularity: "named"}, {name: "三叔", granularity: "functional"}]
+
+【标注分析】
+
+韩立 (character → attribute: 地点):
+  事件开始前: 韩立在韩立家中（E003 结束时的位置）
+  事件结束后: 韩立在青牛镇
+  → precondition + effect（位置改变）
+
+三叔 (character → attribute: 地点):
+  事件开始前: 三叔也在韩立家中
+  事件结束后: 三叔也到了青牛镇
+  → precondition + effect
+
+【输出】
+{
+  "event_id": "E004",
+  "preconditions": [
+    {"name": "韩立", "type": "character", "attribute": "地点", "from": "韩立家中", "granularity": "named"},
+    {"name": "三叔", "type": "character", "attribute": "地点", "from": "韩立家中", "granularity": "functional"}
+  ],
+  "effects": [
+    {"name": "韩立", "type": "character", "attribute": "地点", "from": "韩立家中", "to": "青牛镇", "granularity": "named"},
+    {"name": "三叔", "type": "character", "attribute": "地点", "from": "韩立家中", "to": "青牛镇", "granularity": "functional"}
+  ]
+}
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+示例 3: 信息传递（扩散）+ 物品传递 + 新实体引入
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+【事件】
+{
+  "event_id": "E015",
+  "decision_text": "李飞宇告诉韩立墨大夫的真实身份",
+  "goal": "韩立得知墨大夫将弟子作为炼药鼎炉的秘密"
+}
+
+【必要实体集】
+characters: [{name: "韩立", granularity: "named"}, {name: "李飞宇", granularity: "functional"}]
+information: [{name: "墨大夫的秘密", granularity: "named"}]
+
+【说明：为何残缺功法书不在必要实体中？】
+在 necessity_grading 阶段，残缺功法书被判定为"不必要"——
+因为 E015 的 goal 是"得知秘密"，功法书是额外收获，
+不影响 goal 达成。因此不在此处标注。
+
+【标注分析】
+
+韩立 (character → attribute: 地点):
+  事件开始前: 韩立在墨大夫的居所（假设此前他在此处）
+  事件结束后: 韩立仍在墨大夫的居所
+  → 只有 precondition
+
+李飞宇 (character → attribute: 地点):
+  事件开始前: 李飞宇在墨大夫的居所
+  事件结束后: 李飞宇仍在墨大夫的居所（重伤未移动）
+  → 只有 precondition
+
+墨大夫的秘密 (information → attribute: 知晓者):
+  事件开始前: 只有李飞宇知道（precondition: from = "李飞宇"）
+  事件结束后: 韩立也知道了（信息扩散，不是转移）
+  → precondition: from = "李飞宇"
+  → effect: from = "李飞宇", to = "韩立"
+
+  注意信息扩散规则：
+  李飞宇告诉韩立后，两人都知道这个秘密。
+  effect 的 from = "李飞宇" 表示信息来源，to = "韩立" 表示新增知晓者。
+  李飞宇并没有"忘记"这个秘密。
+
+【输出】
+{
+  "event_id": "E015",
+  "preconditions": [
+    {"name": "韩立", "type": "character", "attribute": "地点", "from": "墨大夫的居所", "granularity": "named"},
+    {"name": "李飞宇", "type": "character", "attribute": "地点", "from": "墨大夫的居所", "granularity": "functional"},
+    {"name": "墨大夫的秘密", "type": "information", "attribute": "知晓者", "from": "李飞宇", "granularity": "named"}
+  ],
+  "effects": [
+    {"name": "墨大夫的秘密", "type": "information", "attribute": "知晓者", "from": "李飞宇", "to": "韩立", "granularity": "named"}
+  ]
+}
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+示例 4: 物品持有者转移
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+【事件】
+{
+  "event_id": "E010",
+  "decision_text": "墨大夫选中韩立为药童，交给他一本辨药手册",
+  "goal": "韩立被选为墨大夫的药童，获得辨药手册开始学习"
+}
+
+【必要实体集】
+characters: [{name: "韩立", granularity: "named"}, {name: "墨大夫", granularity: "named"}]
+items: [{name: "辨药手册", granularity: "named"}]
+
+【标注分析】
+
+韩立 (character → attribute: 地点):
+  事件开始前: 韩立在七玄门
+  事件结束后: 韩立在墨大夫的居所（被带去了）
+  → precondition + effect
+
+墨大夫 (character → attribute: 地点):
+  事件开始前: 墨大夫在七玄门（选人时在场）
+  事件结束后: 墨大夫在墨大夫的居所
+  → precondition + effect
+
+辨药手册 (item → attribute: 持有者):
+  事件开始前: 辨药手册由墨大夫持有
+  事件结束后: 辨药手册由韩立持有（墨大夫交给了韩立）
+  → precondition + effect
+  注意：物品是"转移"不是"扩散"——墨大夫不再持有。
+
+【输出】
+{
+  "event_id": "E010",
+  "preconditions": [
+    {"name": "韩立", "type": "character", "attribute": "地点", "from": "七玄门", "granularity": "named"},
+    {"name": "墨大夫", "type": "character", "attribute": "地点", "from": "七玄门", "granularity": "named"},
+    {"name": "辨药手册", "type": "item", "attribute": "持有者", "from": "墨大夫", "granularity": "named"}
+  ],
+  "effects": [
+    {"name": "韩立", "type": "character", "attribute": "地点", "from": "七玄门", "to": "墨大夫的居所", "granularity": "named"},
+    {"name": "墨大夫", "type": "character", "attribute": "地点", "from": "七玄门", "to": "墨大夫的居所", "granularity": "named"},
+    {"name": "辨药手册", "type": "item", "attribute": "持有者", "from": "墨大夫", "to": "韩立", "granularity": "named"}
+  ]
+}
+
+</examples>
+
+<input>
+事件列表（含 goal）：
+{events_json}
+
+必要实体集（含颗粒度标注）：
+{necessary_json}
+
+Entity Registry：
+{registry_json}
+
+请为每个事件输出 preconditions 和 effects。
+
+输出 JSON 格式：
+{
+  "transitions": [
+    {
+      "event_id": "...",
+      "preconditions": [
+        {"name": "...", "type": "...", "attribute": "...", "from": "...", "granularity": "..."}
+      ],
+      "effects": [
+        {"name": "...", "type": "...", "attribute": "...", "from": "...", "to": "...", "granularity": "..."}
+      ]
+    }
+  ]
+}
+</input>
