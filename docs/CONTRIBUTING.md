@@ -93,11 +93,11 @@ pnpm build
 | 依赖        | 版本   | 说明                         |
 | ----------- | ------ | ---------------------------- |
 | Python      | 3.10+  | 后端运行环境                 |
-| Node.js     | 18+    | 前端开发（仅网页端需要）     |
+| Node.js     | 20+    | 前端开发（仅网页端需要）     |
 | pnpm        | 最新版 | 前端包管理器                 |
 | LLM API Key | —     | 至少需要一个 Provider 的 Key |
 
-### 快速搭建
+### 搭建
 
 ```bash
 # 1. Clone
@@ -122,15 +122,16 @@ cd ../frontend && pnpm install
 
 ```
 WhatIf/
-├── backend/                          # Python 后端
-│   ├── config.py                     #   全局配置（Provider、Agent、路径）
-│   ├── core/                         #   共享核心（LLM 客户端、数据模型）
-│   ├── preprocessing/                #   三阶段预处理管线
+├── backend/
+│   ├── config.py                     #   全局配置
+│   ├── core/
+│   ├── preprocessing/                #   小说数据提取管线
 │   ├── runtime/                      #   游戏引擎
 │   │   ├── game.py                   #     GameEngine 主循环
-│   │   └── agents/                   #     6 个领域 Agent
+|   |   ├── extract.py                #     Preprocessing 入口
+│   │   └── agents/                   #     6 类 Agent
 │   │       ├── base.py               #       BaseLLMCaller, BaseAgent, AgentExecutor
-│   │       ├── narrative_generation/  #       叙事生成主管线
+│   │       ├── narrative_generation/  #       叙事生成主管线，调度器 + 写作
 │   │       ├── context_enrichment/    #       历史召回 + 实体查询
 │   │       ├── deviation_guidance/    #       偏离检测 + 引导
 │   │       ├── delta_lifecycle/       #       替代时间线管理
@@ -142,9 +143,9 @@ WhatIf/
 └── start.py                          # 全栈启动脚本
 ```
 
-### 关键文件速查
+### 文件说明
 
-| 文件                               | 你改它的场景                                               |
+| 文件                               | 更改场景                                               |
 | ---------------------------------- | ---------------------------------------------------------- |
 | `backend/config.py`              | 添加 Provider、调整模型映射、修改 Agent 配置               |
 | `backend/core/llm.py`            | 修改 LLM 调用逻辑、添加 Provider 鉴权                      |
@@ -157,24 +158,16 @@ WhatIf/
 
 ### 添加新的 LLM Provider
 
-四步完成：
-
-1. **`backend/config.py`** — 在 `LLMProvider` 枚举中添加新值，在 `MODEL_MAPPING` 中添加 `lite` / `standard` / `pro` 三个层级的模型映射
-2. **`backend/core/llm.py`** — 在 `_setup_api_key()` 的 `key_env_map` 中添加对应的 API Key 环境变量名
-3. **`backend/.env.example`** — 添加新 Key 的占位符和申请链接
-4. 如果新 Provider 不支持 `response_format`，将其加入 `_NO_RESPONSE_FORMAT_PROVIDERS` 集合
+见 README.md
 
 ### 添加新的 Agent
 
-五步完成：
-
-1. 在 `backend/runtime/agents/` 下创建新目录（例如 `my_agent/`）
-2. 实现 `agent.py`，继承 `BaseAgent`，实现 `execute()` 方法
-3. 如需 LLM 调用，创建 Caller 类继承 `BaseLLMCaller`，Prompt 放在同目录的 `prompts/` 下
-4. 在 `backend/runtime/agents/__init__.py` 中注册导出
-5. 在 `backend/config.py` 的 `AGENT_CONFIG` 中添加 `LLMConfig` 配置项
-
-> 每个 Agent 目录可以包含一个 `SKILL.md` 文档，描述该 Agent 的领域知识和接口契约。
+1. 在 backend/runtime/agents/<new_agent>/ 新建 Agent，实现 BaseAgent.execute()
+2. 若需 LLM，建 Caller 继承 BaseLLMCaller
+3. 在 backend/llm_config.yaml 增加对应配置
+4. 在 backend/config.py 的 _REQUIRED_KEYS 加上新 key
+5. 在 backend/runtime/game.py 注册到 AgentExecutor
+6. 在 backend/runtime/agents/__init__.py 导出，便于统一引用，此为可选步骤
 
 ## 许可
 
