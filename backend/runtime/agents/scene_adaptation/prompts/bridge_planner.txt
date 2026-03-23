@@ -76,26 +76,26 @@
 <conflicts>
 <conflict>
   <delta_id>delta_001</delta_id>
-  <delta_fact>你拒绝了张老的邀请，独自离开了坊市</delta_fact>
+  <delta_fact>你拒绝了C的邀请，独自离开了乙镇</delta_fact>
   <delta_intensity>6</delta_intensity>
-  <conflicting_precondition>主角在张老的炼丹房中</conflicting_precondition>
+  <conflicting_precondition>主角在C的住处中</conflicting_precondition>
 </conflict>
 </conflicts>
-<preconditions>主角在张老的炼丹房中，张老正在讲解丹方</preconditions>
-<previous_event>你转身走出坊市大门，街道上行人稀少，夜风带着草药的气味。</previous_event>
-<next_phase_source>张老的炼丹房内，药炉中火焰跳动，张老将一张泛黄的丹方推到你面前。</next_phase_source>
+<preconditions>主角在C的住处中，C正在讲解丹方</preconditions>
+<previous_event>你转身走出乙镇大门，街道上行人稀少，夜风带着草药的气味。</previous_event>
+<next_phase_source>C的住处内，药炉中火焰跳动，C将一张泛黄的丹方推到你面前。</next_phase_source>
 </input>
 <output>
 {
   "delta_evolutions": [
     {
       "original_delta_id": "delta_001",
-      "evolution_rationale": "子意图拆解：(1) inner_state: 对张老抵触/不信任 → preserve (2) world_state: 离开坊市 → rewrite（与'在炼丹房'矛盾）。保留抵触态度，改写离开的事实为因外力回到炼丹房。",
-      "evolved_fact": "你对张老的邀请心存抵触，但因机缘巧合回到了炼丹房",
+      "evolution_rationale": "子意图拆解：(1) inner_state: 对C抵触/不信任 → preserve (2) world_state: 离开乙镇 → rewrite（与'在C的住处'矛盾）。保留抵触态度，改写离开的事实为因外力回到C的住处。",
+      "evolved_fact": "你对C的邀请心存抵触，但因机缘巧合回到了C的住处",
       "evolved_intensity": 4
     }
   ],
-  "bridge_narrative": "你沿着坊市外的小路走了不远，一阵急促的脚步声从身后传来。回头一看，是张老的小徒弟，气喘吁吁地拦住你的去路：'前辈，师父说有一味药材只有您见过，求您回去看一眼。'你本想拒绝，但少年眼中的恳切让你犹豫了片刻。最终你跟着他折返，再次踏入了张老的炼丹房。药炉中的火焰依旧跳动，张老像是早已料到你会回来，将一张泛黄的丹方推到你面前。"
+  "bridge_narrative": "你沿着乙镇外的小路走了不远，一阵急促的脚步声从身后传来。回头一看，是C的小徒弟，气喘吁吁地拦住你的去路：'前辈，师父说有一味药材只有您见过，求您回去看一眼。'你本想拒绝，但少年眼中的恳切让你犹豫了片刻。最终你跟着他折返，再次踏入了C的住处。药炉中的火焰依旧跳动，C像是早已料到你会回来，将一张泛黄的丹方推到你面前。"
 }
 </output>
 </example>

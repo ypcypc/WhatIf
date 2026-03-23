@@ -95,25 +95,25 @@ archived_overrides 是已归档的永久改动，没有 intensity。
 <input>
 <event_id>evt_038</event_id>
 <event_original_text>
-韩立独自坐在洞府中，面前的玉简记载着炼器之法。他反复研读，眉头时而紧皱，时而舒展。数日后，他勉强炼制出一柄品质尚可的飞剑，心中颇为满意。
+A独自坐在甲地中，面前的玉简记载着炼器之法。他反复研读，眉头时而紧皱，时而舒展。数日后，他勉强炼制出一柄品质尚可的飞剑，心中颇为满意。
 </event_original_text>
 <active_deltas>
-<delta id="delta_012" intensity="3" source_event="evt_031" fact="韩立在坊市结识了炼器师张铁匠，对方赠予他一份炼器心得手札" />
+<delta id="delta_012" intensity="3" source_event="evt_031" fact="A在乙镇结识了炼器师C，对方赠予他一份炼器心得手札" />
 </active_deltas>
 <archived_overrides></archived_overrides>
 </input>
 <output>
 {
   "event_id": "evt_038",
-  "delta_impact_summary": "韩立此前获得了张铁匠的炼器心得，研读炼器之法时会参考该手札，炼制过程和心理活动需反映这一额外助力。",
+  "delta_impact_summary": "A此前获得了C的炼器心得，研读炼器之法时会参考该手札，炼制过程和心理活动需反映这一额外助力。",
   "adaptations": [
     {
       "strategies": ["rewrite"],
-      "target": "韩立研读玉简的描写段落",
+      "target": "A研读玉简的描写段落",
       "delta_source": "delta_012",
       "original": "他反复研读，眉头时而紧皱，时而舒展",
-      "plan": "改写为韩立将玉简内容与张铁匠手札对照研读，手札中的实操经验帮助他更快理解玉简中晦涩的理论，眉头舒展的频率更高。",
-      "nearest_state_reasoning": "原文中韩立独自研读已有困惑与领悟的交替，加入手札作为辅助参考是最小改动——研读行为本身不变，只是多了一份参考资料。",
+      "plan": "改写为A将玉简内容与C手札对照研读，手札中的实操经验帮助他更快理解玉简中晦涩的理论，眉头舒展的频率更高。",
+      "nearest_state_reasoning": "原文中A独自研读已有困惑与领悟的交替，加入手札作为辅助参考是最小改动——研读行为本身不变，只是多了一份参考资料。",
       "intensity_guidance": "正常描写"
     },
     {
@@ -121,7 +121,7 @@ archived_overrides 是已归档的永久改动，没有 intensity。
       "target": "炼制结果的描写",
       "delta_source": "delta_012",
       "original": "勉强炼制出一柄品质尚可的飞剑，心中颇为满意",
-      "plan": "改写为炼制过程更顺利一些，成品品质略高于「尚可」，韩立心中除了满意外还暗自感激张铁匠的指点。",
+      "plan": "改写为炼制过程更顺利一些，成品品质略高于「尚可」，A心中除了满意外还暗自感激C的指点。",
       "nearest_state_reasoning": "intensity 3 不宜让结果产生质变，仍是初学者水平的成功，只是从「勉强」变为「较为顺利」，保持原文满意的情感基调。",
       "intensity_guidance": "正常描写"
     }
@@ -134,26 +134,26 @@ archived_overrides 是已归档的永久改动，没有 intensity。
 <input>
 <event_id>evt_015</event_id>
 <event_original_text>
-墨大夫领着韩立走进药园，指着满园药草道："这些药草每日需你浇灌照料。"他弯腰拔起一株枯黄的药草，皱眉道："看看，这是疏于照料的后果。"韩立独自一人在药园中忙碌了一整天，累得腰酸背痛，却不敢有半句怨言。
+E领着A走进药园，指着满园药草道："这些药草每日需你浇灌照料。"他弯腰拔起一株枯黄的药草，皱眉道："看看，这是疏于照料的后果。"A独自一人在药园中忙碌了一整天，累得腰酸背痛，却不敢有半句怨言。
 </event_original_text>
 <active_deltas>
-<delta id="delta_005" intensity="4" source_event="evt_008" fact="韩立与张铁在前往七玄门途中结为盟友，约定互相照应" />
-<delta id="delta_009" intensity="2" source_event="evt_012" fact="韩立在入门测试中表现出超出同龄人的耐力" />
+<delta id="delta_005" intensity="4" source_event="evt_008" fact="A与C在前往甲组织途中结为盟友，约定互相照应" />
+<delta id="delta_009" intensity="2" source_event="evt_012" fact="A在入门测试中表现出超出同龄人的耐力" />
 </active_deltas>
 <archived_overrides></archived_overrides>
 </input>
 <output>
 {
   "event_id": "evt_015",
-  "delta_impact_summary": "韩立有了盟友张铁（intensity 4），药园劳作场景应体现张铁的存在或互助；韩立展现过超常耐力（intensity 2），劳作中的体力表现需轻微调整。",
+  "delta_impact_summary": "A有了盟友C（intensity 4），药园劳作场景应体现C的存在或互助；A展现过超常耐力（intensity 2），劳作中的体力表现需轻微调整。",
   "adaptations": [
     {
       "strategies": ["rewrite", "addition"],
-      "target": "韩立独自在药园忙碌的段落",
+      "target": "A独自在药园忙碌的段落",
       "delta_source": "delta_005,delta_009",
-      "original": "韩立独自一人在药园中忙碌了一整天，累得腰酸背痛，却不敢有半句怨言",
-      "plan": "改写为张铁在完成自己的杂务后来药园帮忙（体现盟友关系），韩立虽然劳累但耐力比同龄人稍强（轻微调整体力描写，不夸张）。新增一段张铁到来后两人分工合作的简短互动，展现盟友间的默契。",
-      "nearest_state_reasoning": "原文核心是药园劳作的辛苦，保留这一基调。张铁来帮忙是 intensity 4 的合理体现——盟友约定互相照应，劳作场景是自然的触发点。耐力调整仅体现为措辞微调（从「累得腰酸背痛」变为「虽然疲惫但尚能支撑」），保持劳作的艰辛感。",
+      "original": "A独自一人在药园中忙碌了一整天，累得腰酸背痛，却不敢有半句怨言",
+      "plan": "改写为C在完成自己的杂务后来药园帮忙（体现盟友关系），A虽然劳累但耐力比同龄人稍强（轻微调整体力描写，不夸张）。新增一段C到来后两人分工合作的简短互动，展现盟友间的默契。",
+      "nearest_state_reasoning": "原文核心是药园劳作的辛苦，保留这一基调。C来帮忙是 intensity 4 的合理体现——盟友约定互相照应，劳作场景是自然的触发点。耐力调整仅体现为措辞微调（从「累得腰酸背痛」变为「虽然疲惫但尚能支撑」），保持劳作的艰辛感。",
       "intensity_guidance": "重点刻画"
     }
   ]

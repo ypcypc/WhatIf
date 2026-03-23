@@ -26,7 +26,17 @@
 
 ---
 
-## 快速开始
+## 下载体验
+
+如果你只想体验 WhatIf 而不需要自行搭建开发环境，建议直接下载打包好的桌面版：
+
+1. 前往 [Releases](https://github.com/ypcypc/WhatIf/releases) 页面
+2. 下载最新版本的安装包，或免安装版
+3. 运行后在设置页面填入你的 API Key，导入数据包即可开始游玩
+
+---
+
+## 快速开始（开发者）
 
 ### 1. 安装依赖
 
@@ -89,10 +99,10 @@ python play.py ../output/我的小说
 ```bash
 cd ..
 python start.py
-# 打开 http://localhost:5173
+# 打开 http://localhost:3030
 ```
 
-说明：网页端默认读取 `backend/config.py` 中 `OUTPUT_BASE` 指向的 WorldPkg。
+说明：网页端启动后，在界面中选择或导入 `.wpkg` 数据包即可开始游玩。
 
 ---
 
@@ -104,7 +114,7 @@ WhatIf 分两阶段工作：
 小说 `.txt` -> 文本清理与分句 -> 事件提取 -> Lorebook 提取 -> 实体状态转换 -> WorldPkg
 
 第二阶段：  
-WorldPkg -> GameEngine -> FastAPI + SSE -> 网页端 / CLI
+WorldPkg -> GameEngine -> FastAPI + SSE -> Electron 桌面端 / 网页端 / CLI
 
 <p align="center">
   <img src="docs/images/Project_Structure.png" alt="WhatIf Project Structure" width="900">
@@ -153,7 +163,7 @@ uvicorn api.app:app --reload --port 8000
 
 # 终端 2 - 前端
 cd frontend
-pnpm dev --port 5173
+pnpm dev --port 3030
 ```
 
 ### WorldPkg 输出结构
@@ -281,13 +291,22 @@ python -c "import config; print('llm config ok')"
 | 方法 | 端点 | 说明 |
 | --- | --- | --- |
 | GET | `/api/health` | 健康检查 |
-| POST | `/api/game/start` | 开始游戏（SSE 流式） |
-| POST | `/api/game/action` | 玩家行动（SSE 流式） |
-| POST | `/api/game/continue` | 继续推进（SSE 流式） |
+| POST | `/api/game/start` | 开始游戏 |
+| POST | `/api/game/action` | 玩家行动 |
+| POST | `/api/game/continue` | 继续推进 |
 | GET | `/api/game/state` | 查询当前状态 |
 | POST | `/api/game/save` | 存档 |
 | GET | `/api/game/saves` | 列出存档 |
 | POST | `/api/game/load` | 读档 |
+| GET | `/api/game/event-image/{id}` | 获取事件图片 |
+| GET | `/api/config/worldpkgs` | 列出数据包 |
+| POST | `/api/config/worldpkg/load` | 加载数据包 |
+| POST | `/api/config/worldpkg/import` | 导入数据包 |
+| GET | `/api/config/llm` | 获取 LLM 配置 |
+| PUT | `/api/config/llm` | 更新 LLM 配置 |
+| PUT | `/api/config/api-keys` | 更新 API 密钥 |
+| GET | `/api/voice/voices` | 获取可用 TTS 语音 |
+| POST | `/api/voice/segment` | 语音文本分句 |
 
 ---
 
@@ -302,7 +321,7 @@ python -c "import config; print('llm config ok')"
 
 - **报错 `XXX_API_KEY 未设置`**：检查 `backend/.env` 是否已填写，并重开终端。
 - **报错缺少 `zh_core_web_sm`**：运行 `python -m spacy download zh_core_web_sm`。
-- **网页端无法开始游戏**：通常是 `OUTPUT_BASE` 目录不存在。请先确认 WorldPkg 已生成。
+- **网页端无法开始游戏**：请先在界面中导入或选择一个 `.wpkg` 数据包，并确认 API Key 已配置。
 - **报错 `llm_config.yaml 缺少必需配置/存在未知配置键`**：检查配置键名是否与系统要求一致。
 - **报错 `extra_params 不允许覆盖保留键`**：移除 `extra_params` 中对 `model/messages/temperature/stream/response_format/max_tokens` 的覆盖。
 
@@ -310,11 +329,16 @@ python -c "import config; print('llm config ok')"
 
 ## Roadmap
 
+### 已完成
+
+
+- [x] Electron 桌面端打包
+
 ### 近期
 
-- [ ] 语音互动：语音输入 + 叙事朗读
 - [ ] Prompt 优化与 Token 消耗优化
-
+- [ ] 多语言叙事支持优化
+- [ ] 语音互动：TTS 叙事朗读 + 语音输入 + 对话模式, 测试中
 ---
 
 ## 贡献

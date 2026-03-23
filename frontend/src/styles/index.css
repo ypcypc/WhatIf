@@ -1,0 +1,658 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500&family=Noto+Serif+SC:wght@400;500;600;700&display=swap');
+@import "tailwindcss";
+
+@font-face {
+  font-family: 'WhatIf Pixel Logo';
+  src: url('../assets/fonts/PressStart2P-Regular.ttf') format('truetype');
+  font-style: normal;
+  font-weight: 400;
+  font-display: block;
+}
+
+@theme {
+  /* ── Background hierarchy ── */
+  --color-bg-primary: #04080f;
+  --color-bg-surface: #0c1528;
+  --color-bg-surface-hover: #172241;
+  --color-bg-1: #070e1c;
+  --color-bg-2: #0c1528;
+  --color-bg-3: #111d35;
+  --color-bg-4: #172241;
+
+  /* ── Accent ── */
+  --color-accent-gold: #e8a020;
+  --color-accent-amber: #f5c050;
+  --color-amber-dim: rgba(232,160,32,0.10);
+  --color-amber-glow: rgba(232,160,32,0.22);
+  --color-amber-border: rgba(232,160,32,0.22);
+
+  /* ── Text ── */
+  --color-text-primary: #ede8df;
+  --color-text-secondary: #9ba8bf;
+  --color-text-muted: #3f4e6a;
+  --color-text-0: var(--color-text-primary);
+  --color-text-1: var(--color-text-secondary);
+  --color-text-2: var(--color-text-muted);
+
+  /* ── Border ── */
+  --color-border: rgba(255,255,255,0.055);
+
+  /* ── Fonts ── */
+  --font-serif: 'Noto Serif SC', 'Playfair Display', serif;
+  --font-sans: 'DM Sans', system-ui, sans-serif;
+  --font-pixel: 'WhatIf Pixel Logo', monospace;
+}
+
+/* ── CSS Houdini: animatable custom property for conic-gradient edge glare ── */
+@property --edge-angle {
+  syntax: "<angle>";
+  initial-value: 135deg;
+  inherits: false;
+}
+
+/* ── Titlebar drag ── */
+.titlebar-drag { -webkit-app-region: drag; }
+.titlebar-no-drag { -webkit-app-region: no-drag; }
+
+/* ══════════════════════════════
+   LIQUID GLASS MENU BUTTON
+══════════════════════════════ */
+.mbtn {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 18px 26px;
+  background:
+    linear-gradient(
+      135deg,
+      rgba(232,160,32,0.04) 0%,
+      rgba(255,255,255,0.025) 40%,
+      rgba(232,160,32,0.03) 100%
+    );
+  backdrop-filter: blur(18px) saturate(1.4) brightness(1.05);
+  -webkit-backdrop-filter: blur(18px) saturate(1.4) brightness(1.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 16px;
+  cursor: pointer;
+  position: relative;
+  overflow: visible;
+  isolation: isolate;
+  --edge-angle: 135deg;
+  transition:
+    transform 0.5s cubic-bezier(.16,1,.3,1),
+    border-color 0.4s ease,
+    box-shadow 0.5s cubic-bezier(.16,1,.3,1),
+    background 0.4s ease;
+}
+
+/* ── Glass inner highlight layer (top specular) ── */
+.mbtn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(
+      168deg,
+      rgba(255,255,255,0.10) 0%,
+      rgba(255,255,255,0.03) 25%,
+      transparent 50%
+    );
+  border-radius: 16px;
+  pointer-events: none;
+  z-index: 1;
+  transition: opacity 0.5s ease;
+}
+
+/* ── Glass inner shadow / depth layer ── */
+.mbtn::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 16px;
+  box-shadow:
+    inset 0 1px 1px rgba(255,255,255,0.09),
+    inset 0 -1px 2px rgba(0,0,0,0.2),
+    inset 1px 0 1px rgba(255,255,255,0.04),
+    inset -1px 0 1px rgba(0,0,0,0.1);
+  pointer-events: none;
+  z-index: 1;
+  transition: box-shadow 0.5s ease;
+}
+
+/* ── Edge Glare: conic-gradient rim light ── */
+.mbtn .glass-edge {
+  position: absolute;
+  inset: -1.5px;
+  border-radius: 18px;
+  pointer-events: none;
+  z-index: 3;
+  background: conic-gradient(
+    from var(--edge-angle, 135deg),
+    transparent 0deg,
+    transparent 120deg,
+    rgba(255,240,200,0.03) 150deg,
+    rgba(255,220,140,0.25) 170deg,
+    rgba(255,245,220,0.55) 178deg,
+    rgba(255,250,240,0.8) 180deg,
+    rgba(255,245,220,0.55) 182deg,
+    rgba(255,220,140,0.25) 190deg,
+    rgba(255,240,200,0.03) 210deg,
+    transparent 240deg,
+    transparent 360deg
+  );
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  padding: 1.5px;
+  opacity: 0;
+  filter: blur(0.5px);
+  transition: opacity 0.4s ease;
+}
+
+/* ── Secondary diffuse glow behind edge glare ── */
+.mbtn .glass-edge-glow {
+  position: absolute;
+  inset: -6px;
+  border-radius: 22px;
+  pointer-events: none;
+  z-index: -1;
+  background: conic-gradient(
+    from var(--edge-angle, 135deg),
+    transparent 0deg,
+    transparent 140deg,
+    rgba(232,160,32,0.06) 160deg,
+    rgba(232,160,32,0.14) 175deg,
+    rgba(255,200,80,0.18) 180deg,
+    rgba(232,160,32,0.14) 185deg,
+    rgba(232,160,32,0.06) 200deg,
+    transparent 220deg,
+    transparent 360deg
+  );
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  padding: 6px;
+  opacity: 0;
+  filter: blur(6px);
+  transition: opacity 0.5s ease;
+}
+
+/* ── Lensing / refraction shimmer ── */
+.mbtn .glass-refract {
+  position: absolute;
+  inset: 0;
+  border-radius: 16px;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition: opacity 0.6s ease;
+}
+.mbtn .glass-refract::before {
+  content: '';
+  position: absolute;
+  top: -50%; left: -50%;
+  width: 200%; height: 200%;
+  background:
+    radial-gradient(ellipse 40% 60% at 30% 20%, rgba(232,160,32,0.08), transparent 60%),
+    radial-gradient(ellipse 50% 40% at 70% 80%, rgba(255,220,120,0.05), transparent 60%);
+  animation: glass-shimmer 4s ease-in-out infinite alternate;
+}
+
+@keyframes glass-shimmer {
+  0% { transform: translate(0, 0) rotate(0deg); }
+  100% { transform: translate(8px, 4px) rotate(3deg); }
+}
+
+/* ── Idle edge shimmer animation ── */
+@keyframes edge-idle {
+  0%   { --edge-angle: 120deg; }
+  25%  { --edge-angle: 200deg; }
+  50%  { --edge-angle: 300deg; }
+  75%  { --edge-angle: 220deg; }
+  100% { --edge-angle: 480deg; }
+}
+
+/* ── Ambient idle edge shimmer (visible when .in and not .dim) ── */
+.mbtn.in:not(.dim) .glass-edge {
+  opacity: 0.25;
+  animation: edge-idle 8s ease-in-out infinite;
+}
+.mbtn.in:nth-child(1) .glass-edge { animation-delay: 0s; }
+.mbtn.in:nth-child(2) .glass-edge { animation-delay: -2s; }
+.mbtn.in:nth-child(3) .glass-edge { animation-delay: -4.5s; }
+.mbtn.in:nth-child(4) .glass-edge { animation-delay: -6.2s; }
+
+/* On hover, stop ambient → mouse-driven */
+.mbtn.in:not(.dim):hover .glass-edge {
+  animation: none;
+  opacity: 1;
+}
+.mbtn.in:not(.dim):hover .glass-edge-glow {
+  opacity: 1;
+}
+
+/* ── Hover: Liquid Glass activation ── */
+.mbtn:hover {
+  border-color: rgba(232,160,32,0.25);
+  transform: translateX(4px) scale(1.018);
+  background:
+    linear-gradient(
+      135deg,
+      rgba(232,160,32,0.07) 0%,
+      rgba(255,255,255,0.04) 40%,
+      rgba(232,160,32,0.06) 100%
+    );
+  box-shadow:
+    0 8px 32px rgba(0,0,0,0.35),
+    0 0 0 0.5px rgba(232,160,32,0.20),
+    0 0 40px rgba(232,160,32,0.06);
+  backdrop-filter: blur(24px) saturate(1.6) brightness(1.08);
+  -webkit-backdrop-filter: blur(24px) saturate(1.6) brightness(1.08);
+}
+.mbtn:hover::before {
+  background:
+    linear-gradient(
+      168deg,
+      rgba(255,255,255,0.16) 0%,
+      rgba(255,240,180,0.06) 20%,
+      rgba(255,255,255,0.04) 35%,
+      transparent 55%
+    );
+}
+.mbtn:hover::after {
+  box-shadow:
+    inset 0 1px 2px rgba(255,255,255,0.13),
+    inset 0 -2px 4px rgba(0,0,0,0.25),
+    inset 2px 0 2px rgba(255,255,255,0.05),
+    inset -2px 0 2px rgba(0,0,0,0.15);
+}
+.mbtn:hover .glass-refract { opacity: 1; }
+.mbtn:hover .mbtn-icon {
+  color: var(--color-accent-gold);
+  transform: scale(1.12);
+  filter: drop-shadow(0 0 6px rgba(232,160,32,0.5));
+}
+.mbtn:hover .mbtn-label {
+  color: var(--color-text-primary);
+  text-shadow: 0 0 12px rgba(232,160,32,0.15);
+}
+
+/* ── Active: press deformation ── */
+.mbtn:active {
+  transform: translateX(4px) scale(0.975) !important;
+  transition-duration: 0.1s;
+  box-shadow:
+    0 2px 8px rgba(0,0,0,0.4),
+    0 0 0 0.5px rgba(232,160,32,0.30),
+    inset 0 2px 8px rgba(0,0,0,0.15);
+}
+.mbtn:active::before {
+  background:
+    linear-gradient(
+      168deg,
+      rgba(255,240,180,0.20) 0%,
+      rgba(232,160,32,0.08) 30%,
+      transparent 50%
+    );
+}
+.mbtn:active .glass-edge {
+  background: conic-gradient(
+    from var(--edge-angle, 135deg),
+    transparent 0deg,
+    transparent 100deg,
+    rgba(255,250,240,0.1) 140deg,
+    rgba(255,245,220,0.5) 165deg,
+    rgba(255,255,255,0.95) 178deg,
+    rgba(255,255,255,1) 180deg,
+    rgba(255,255,255,0.95) 182deg,
+    rgba(255,245,220,0.5) 195deg,
+    rgba(255,250,240,0.1) 220deg,
+    transparent 260deg,
+    transparent 360deg
+  );
+  filter: blur(0.3px);
+}
+.mbtn:active .glass-edge-glow {
+  filter: blur(10px);
+  opacity: 1;
+  background: conic-gradient(
+    from var(--edge-angle, 135deg),
+    transparent 0deg,
+    transparent 130deg,
+    rgba(255,200,80,0.25) 170deg,
+    rgba(255,230,140,0.35) 180deg,
+    rgba(255,200,80,0.25) 190deg,
+    transparent 230deg,
+    transparent 360deg
+  );
+}
+
+/* ── Dim state (disabled) ── */
+.mbtn.dim { opacity: 0.30 !important; cursor: default; }
+.mbtn.dim:hover {
+  border-color: rgba(255,255,255,0.06);
+  background: rgba(255,255,255,0.02);
+  box-shadow: none;
+  transform: translateX(0) !important;
+  backdrop-filter: blur(12px) saturate(1.0) brightness(1.0);
+  -webkit-backdrop-filter: blur(12px) saturate(1.0) brightness(1.0);
+}
+.mbtn.dim:hover::before {
+  background: linear-gradient(168deg, rgba(255,255,255,0.06) 0%, transparent 40%);
+}
+.mbtn.dim:hover::after {
+  box-shadow:
+    inset 0 1px 1px rgba(255,255,255,0.05),
+    inset 0 -1px 2px rgba(0,0,0,0.15);
+}
+.mbtn.dim:hover .glass-edge { opacity: 0; }
+.mbtn.dim:hover .glass-edge-glow { opacity: 0; }
+.mbtn.dim:hover .glass-refract { opacity: 0; }
+.mbtn.dim:hover .mbtn-icon { color: var(--color-text-muted); transform: none; filter: none; }
+.mbtn.dim:hover .mbtn-label { color: var(--color-text-muted); text-shadow: none; }
+
+/* ── Icon and label ── */
+.mbtn-icon {
+  width: 22px;
+  text-align: center;
+  color: var(--color-text-secondary);
+  font-size: 17px;
+  transition: color 0.4s, transform 0.45s cubic-bezier(.16,1,.3,1), filter 0.4s;
+  position: relative;
+  z-index: 2;
+  flex-shrink: 0;
+}
+
+.mbtn-label {
+  font-size: 15px;
+  font-weight: 400;
+  color: var(--color-text-secondary);
+  transition: color 0.4s, text-shadow 0.4s;
+  position: relative;
+  z-index: 2;
+}
+
+/* ── Warning badge ── */
+.warn-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding: 10px 20px;
+  background: rgba(232,160,32,0.07);
+  border: 0.5px solid rgba(232,160,32,0.28);
+  border-radius: 9px;
+  font-size: 13px;
+  color: var(--color-accent-gold);
+}
+
+.warn-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--color-accent-gold);
+  animation: pulse-dot 2s ease infinite;
+  flex-shrink: 0;
+}
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.7); }
+}
+
+/* ── Screen header (library/settings) ── */
+.screen-hdr {
+  padding: 26px 40px;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  border-bottom: 0.5px solid var(--color-border);
+  backdrop-filter: blur(12px);
+  background: rgba(4,8,15,0.55);
+}
+
+.back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border: 0.5px solid var(--color-border);
+  border-radius: 9px;
+  cursor: pointer;
+  color: var(--color-text-secondary);
+  font-size: 13px;
+  font-family: 'DM Sans', sans-serif;
+  transition: all 0.25s;
+  background: transparent;
+  letter-spacing: 0.03em;
+}
+.back-btn:hover {
+  border-color: var(--color-amber-border);
+  color: var(--color-accent-gold);
+  background: var(--color-amber-dim);
+}
+
+/* ── Book card ── */
+.book-card {
+  border-radius: 16px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: box-shadow 0.35s cubic-bezier(.16,1,.3,1);
+  border: 0.5px solid var(--color-border);
+}
+.book-card:hover {
+  box-shadow: 0 24px 64px rgba(0,0,0,0.6),
+              0 0 0 0.5px var(--color-amber-border),
+              0 0 32px var(--color-amber-glow);
+}
+
+.book-overlay {
+  position: absolute; inset: 0;
+  background: rgba(4,8,15,0.72);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  opacity: 0;
+  z-index: 2;
+  transition: opacity 0.25s;
+}
+.book-card:hover .book-overlay { opacity: 1; }
+
+.book-action-btn {
+  padding: 8px 22px;
+  border: 0.5px solid rgba(232,160,32,0.5);
+  border-radius: 8px;
+  background: var(--color-amber-dim);
+  color: var(--color-accent-gold);
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.2s;
+  font-family: 'DM Sans', sans-serif;
+}
+.book-action-btn:hover { background: rgba(232,160,32,0.2); }
+
+/* ── Import card ── */
+.import-card {
+  border-radius: 16px;
+  border: 1.5px dashed var(--color-text-muted);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  cursor: pointer;
+  min-height: 250px;
+  transition: all 0.3s;
+}
+.import-card:hover {
+  border-color: var(--color-accent-gold);
+  background: var(--color-amber-dim);
+  box-shadow: 0 0 30px var(--color-amber-glow);
+}
+
+/* ── API card (settings) ── */
+.api-card {
+  background: var(--color-bg-2);
+  border: 0.5px solid var(--color-border);
+  border-radius: 14px;
+  padding: 20px 24px;
+  margin-bottom: 12px;
+  transition: border-color 0.25s, box-shadow 0.25s;
+}
+.api-card:focus-within {
+  border-color: var(--color-amber-border);
+  box-shadow: 0 0 0 3px rgba(232,160,32,0.07), 0 8px 32px rgba(0,0,0,0.3);
+}
+
+.api-input {
+  flex: 1;
+  background: var(--color-bg-3);
+  border: 0.5px solid var(--color-border);
+  border-radius: 9px;
+  padding: 10px 14px;
+  color: var(--color-text-primary);
+  font-size: 13px;
+  font-family: 'DM Sans', sans-serif;
+  outline: none;
+  transition: border-color 0.25s, box-shadow 0.25s;
+  letter-spacing: 0.02em;
+}
+.api-input::placeholder { color: var(--color-text-muted); }
+.api-input:focus {
+  border-color: rgba(232,160,32,0.45);
+  box-shadow: 0 0 0 3px rgba(232,160,32,0.08);
+}
+
+.icon-btn {
+  width: 36px; height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 0.5px solid var(--color-border);
+  border-radius: 9px;
+  cursor: pointer;
+  color: var(--color-text-secondary);
+  font-size: 14px;
+  transition: all 0.22s;
+  background: transparent;
+  flex-shrink: 0;
+}
+.icon-btn:hover {
+  border-color: var(--color-amber-border);
+  color: var(--color-accent-gold);
+  background: var(--color-amber-dim);
+}
+
+.test-btn {
+  padding: 0 14px;
+  height: 36px;
+  border: 0.5px solid var(--color-border);
+  border-radius: 9px;
+  cursor: pointer;
+  color: var(--color-text-secondary);
+  font-size: 13px;
+  transition: all 0.22s;
+  background: transparent;
+  white-space: nowrap;
+  font-family: 'DM Sans', sans-serif;
+}
+.test-btn:hover {
+  border-color: rgba(100,220,150,0.4);
+  color: #80e8a0;
+  background: rgba(100,220,150,0.07);
+}
+
+/* ── Save button ── */
+.save-btn {
+  width: 100%;
+  padding: 16px;
+  background: linear-gradient(135deg, #e8a020 0%, #c47010 100%);
+  border: none;
+  border-radius: 14px;
+  color: #1c0e00;
+  font-size: 15px;
+  font-weight: 500;
+  font-family: 'DM Sans', sans-serif;
+  cursor: pointer;
+  margin-top: 10px;
+  position: relative;
+  overflow: hidden;
+  transition: opacity 0.25s, transform 0.2s, box-shadow 0.3s;
+  letter-spacing: 0.04em;
+}
+.save-btn::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(rgba(255,255,255,0.12), transparent);
+  pointer-events: none;
+}
+.save-btn:hover {
+  opacity: 0.92;
+  box-shadow: 0 8px 32px rgba(232,160,32,0.4), 0 0 0 1px rgba(232,160,32,0.3);
+}
+.save-btn:active { transform: scale(0.985); }
+
+/* ── Tab system ── */
+.settings-tab {
+  padding: 11px 18px;
+  font-size: 14px;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -0.5px;
+  transition: color 0.25s, border-color 0.25s;
+  font-family: 'DM Sans', sans-serif;
+}
+.settings-tab:hover { color: var(--color-text-primary); }
+.settings-tab.active {
+  color: var(--color-accent-gold);
+  border-bottom-color: var(--color-accent-gold);
+}
+
+/* ── Glass card (gameplay compatibility) ── */
+.glass-card {
+  background: rgba(7,14,28,0.6);
+  border: 0.5px solid var(--color-border);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-radius: 14px;
+}
+
+.glass-bar {
+  background: rgba(7,14,28,0.6);
+  border-top: 0.5px solid var(--color-border);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+/* ── Scrollbar styling ── */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: rgba(148,163,184,0.15);
+  border-radius: 2px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(148,163,184,0.3);
+}
+
+/* ── Reduced motion ── */
+@media (prefers-reduced-motion: reduce) {
+  .mbtn { transition: none; }
+  .mbtn::before, .mbtn::after { transition: none; }
+  .mbtn .glass-edge { animation: none; }
+  .mbtn .glass-refract::before { animation: none; }
+  .warn-dot { animation: none; }
+}

@@ -1,21 +1,20 @@
-"""WhatIf 启动脚本 — 清理旧进程 + 启动后端 API 和前端开发服务器
-
-跨平台（Windows / Linux / macOS），用法:
-    python start.py
-"""
-
 import os
 import platform
+import shutil
 import signal
 import subprocess
 import sys
 import time
 from pathlib import Path
+from urllib.error import URLError
+from urllib.request import urlopen
 
 ROOT = Path(__file__).resolve().parent
 BACKEND_PORT = 8000
-FRONTEND_PORT = 5173
+FRONTEND_PORT = 3030
 IS_WINDOWS = platform.system() == "Windows"
+BACKEND_HEALTH_URL = f"http://127.0.0.1:{BACKEND_PORT}/api/health"
+FRONTEND_URL = f"http://localhost:{FRONTEND_PORT}"
 
 
 # ── 清理旧进程 ──────────────────────────────────────────────
@@ -97,21 +96,67 @@ def find_python() -> str:
     return sys.executable
 
 
+def find_pnpm() -> str:
+    """定位 pnpm 可执行文件。"""
+    candidates = ["pnpm.cmd", "pnpm.exe", "pnpm"] if IS_WINDOWS else ["pnpm"]
+    for candidate in candidates:
+        resolved = shutil.which(candidate)
+        if resolved:
+            return resolved
+    raise FileNotFoundError("未找到 pnpm，请先安装 pnpm 并确保它在 PATH 中。")
+
+
 def start_backend(python: str) -> subprocess.Popen:
+    env = os.environ.copy()
+    env["PYTHONUNBUFFERED"] = "1"
     return subprocess.Popen(
         [python, "-m", "uvicorn", "api.app:app", "--reload", "--port", str(BACKEND_PORT)],
         cwd=ROOT / "backend",
+        env=env,
     )
 
 
-def start_frontend() -> subprocess.Popen:
-    cmd = ["pnpm", "dev", "--port", str(FRONTEND_PORT)]
-    # Windows 下 pnpm 是 .cmd，需要 shell=True
+def start_frontend(pnpm: str) -> subprocess.Popen:
     return subprocess.Popen(
-        cmd,
+        [pnpm, "dev", "--port", str(FRONTEND_PORT)],
         cwd=ROOT / "frontend",
-        shell=IS_WINDOWS,
     )
+
+
+def wait_for_http(url: str, timeout_s: float, *, label: str) -> None:
+    deadline = time.time() + timeout_s
+    last_error: str | None = None
+    while time.time() < deadline:
+        try:
+            with urlopen(url, timeout=2) as response:
+                if 200 <= response.status < 500:
+                    return
+        except URLError as exc:
+            last_error = str(exc)
+        except Exception as exc:  # pragma: no cover - defensive
+            last_error = str(exc)
+        time.sleep(0.5)
+    raise RuntimeError(f"{label} 启动超时：{last_error or '未收到响应'}")
+
+
+def stop_process(proc: subprocess.Popen) -> None:
+    if proc.poll() is not None:
+        return
+    try:
+        if IS_WINDOWS:
+            subprocess.run(
+                ["taskkill", "/F", "/T", "/PID", str(proc.pid)],
+                capture_output=True,
+                check=False,
+            )
+        else:
+            proc.terminate()
+            proc.wait(timeout=5)
+    except Exception:
+        try:
+            proc.kill()
+        except Exception:
+            pass
 
 
 # ── 主流程 ───────────────────────────────────────────────────
@@ -126,30 +171,43 @@ def main() -> None:
     cleanup_port(FRONTEND_PORT)
     time.sleep(1)
 
+    backend: subprocess.Popen | None = None
+    frontend: subprocess.Popen | None = None
+
     # 2) 启动服务
     python = find_python()
+    pnpm = find_pnpm()
     print(f"\n[2/3] 启动后端 (Python: {python})...")
     backend = start_backend(python)
+    wait_for_http(BACKEND_HEALTH_URL, timeout_s=30, label="后端")
+    print(f"  后端已就绪: {BACKEND_HEALTH_URL}")
 
-    print(f"[3/3] 启动前端...")
-    frontend = start_frontend()
+    print(f"\n[3/3] 启动前端 (pnpm: {pnpm})...")
+    frontend = start_frontend(pnpm)
+    wait_for_http(FRONTEND_URL, timeout_s=30, label="前端")
+    print(f"  前端已就绪: {FRONTEND_URL}")
 
-    print(f"\n后端: http://localhost:{BACKEND_PORT}")
-    print(f"前端: http://localhost:{FRONTEND_PORT}")
+    print(f"\n后端: {BACKEND_HEALTH_URL}")
+    print(f"前端: {FRONTEND_URL}")
     print("\n请在浏览器中打开前端地址。按 Ctrl+C 停止所有服务。\n")
 
-    # 3) 等待 Ctrl+C，然后优雅退出
     try:
-        backend.wait()
+        while True:
+            backend_code = backend.poll()
+            frontend_code = frontend.poll()
+            if backend_code is not None:
+                raise RuntimeError(f"后端已退出，退出码 {backend_code}")
+            if frontend_code is not None:
+                raise RuntimeError(f"前端已退出，退出码 {frontend_code}")
+            time.sleep(1)
     except KeyboardInterrupt:
         print("\n正在停止服务...")
+    except RuntimeError as exc:
+        print(f"\n服务异常退出：{exc}")
     finally:
-        for proc in (backend, frontend):
-            try:
-                proc.terminate()
-                proc.wait(timeout=5)
-            except Exception:
-                proc.kill()
+        for proc in (frontend, backend):
+            if proc is not None:
+                stop_process(proc)
         print("已停止。")
 
 

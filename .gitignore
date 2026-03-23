@@ -1,7 +1,9 @@
+# ── 环境变量 ──
 .env
 .env.*
 !.env.example
 
+# ── Python ──
 __pycache__/
 *.py[cod]
 *.pyo
@@ -9,28 +11,40 @@ __pycache__/
 .ruff_cache/
 .mypy_cache/
 .pytest_cache/
+.venv*/
 
-.venv/
-
+# ── Node / 前端 ──
 node_modules/
-dist/
+frontend/dist/
+frontend/dist-electron/
+frontend/release/
+frontend/release-patched/
 
+# ── 后端构建产物 ──
+backend/build/
+backend/dist/
+
+# ── 编辑器 ──
 .vscode/
 .idea/
 *.sw?
 .DS_Store
 Thumbs.db
+*.local
 
+# ── 运行时数据 ──
 output/*/
+output/*.wpkg
 !output/.gitkeep
+logs/dev/
 logs/sessions/*.jsonl
 !logs/**/.gitkeep
 saves/*/
 !saves/.gitkeep
-
 data/novels/*.txt
 !data/novels/.gitkeep
 
+# ── 非项目文件 ──
 CLAUDE.md
 .claude/
 archived/
@@ -38,6 +52,4 @@ Test/
 experiments/
 scripts/
 docs/cleanup/
-
-frontend/dist/
-*.local
+dissertation/

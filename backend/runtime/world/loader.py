@@ -1,4 +1,5 @@
 import json
+import zipfile
 from pathlib import Path
 from typing import TypeVar
 
@@ -23,40 +24,44 @@ from core.models import (
 
 T = TypeVar("T", bound=BaseModel)
 
+_MIME_MAP = {
+    "webp": "image/webp",
+    "png": "image/png",
+    "jpg": "image/jpeg",
+    "jpeg": "image/jpeg",
+}
+
 
 class WorldPkgLoader:
 
-    def __init__(self, worldpkg_path: Path):
-        self.path = worldpkg_path
+    def __init__(self, wpkg_path: Path):
+        self.wpkg_path = wpkg_path
         self._load_all()
         self._build_indices()
 
-    def _load(self, model: type[T], rel_path: str) -> T:
-        path = self.path / rel_path
-        return model.model_validate_json(path.read_text(encoding="utf-8"))
+    def _try_load(self, zf: zipfile.ZipFile, rel_path: str, model: type[T]) -> T | None:
+        try:
+            return model.model_validate_json(zf.read(rel_path))
+        except KeyError:
+            return None
+
+    def _load_transitions(self, zf: zipfile.ZipFile) -> list[EventTransition]:
+        try:
+            raw = json.loads(zf.read("transitions/transitions.json"))
+            return [EventTransition.model_validate(t) for t in raw["transitions"]]
+        except KeyError:
+            return []
 
     def _load_all(self) -> None:
-        self.metadata = self._load(Metadata, "metadata.json")
-        self.sentences = self._load(SentenceData, "source/sentences.json")
-        self.events = self._load(EventData, "events/events.json")
-        self.characters = self._load(CharacterData, "lorebook/characters.json")
-        self.locations = self._load(LocationData, "lorebook/locations.json")
-        self.items = self._load(ItemData, "lorebook/items.json")
-
-        knowledge_path = self.path / "lorebook" / "knowledge.json"
-        if knowledge_path.exists():
-            self.knowledge = self._load(KnowledgeData, "lorebook/knowledge.json")
-        else:
-            self.knowledge = KnowledgeData(knowledge=[])
-
-        transitions_path = self.path / "transitions" / "transitions.json"
-        if transitions_path.exists():
-            raw = json.loads(transitions_path.read_text(encoding="utf-8"))
-            self.transitions: list[EventTransition] = [
-                EventTransition.model_validate(t) for t in raw["transitions"]
-            ]
-        else:
-            self.transitions: list[EventTransition] = []
+        with zipfile.ZipFile(self.wpkg_path, "r") as zf:
+            self.metadata = Metadata.model_validate_json(zf.read("metadata.json"))
+            self.sentences = SentenceData.model_validate_json(zf.read("source/sentences.json"))
+            self.events = EventData.model_validate_json(zf.read("events/events.json"))
+            self.characters = CharacterData.model_validate_json(zf.read("lorebook/characters.json"))
+            self.locations = LocationData.model_validate_json(zf.read("lorebook/locations.json"))
+            self.items = ItemData.model_validate_json(zf.read("lorebook/items.json"))
+            self.knowledge = self._try_load(zf, "lorebook/knowledge.json", KnowledgeData) or KnowledgeData(knowledge=[])
+            self.transitions: list[EventTransition] = self._load_transitions(zf)
 
     def _build_indices(self) -> None:
         self._event_index: dict[str, Event] = {
@@ -148,3 +153,26 @@ class WorldPkgLoader:
     def get_preconditions(self, event_id: str) -> list[Precondition]:
         transition = self.get_transition(event_id)
         return transition.preconditions if transition else []
+
+    def get_event_image(self, event_id: str) -> tuple[bytes, str] | None:
+        """按需读取图片，临时打开 ZipFile。返回 (bytes, media_type) 或 None。"""
+        event = self.get_event(event_id)
+        if not event or not event.image:
+            return None
+        with zipfile.ZipFile(self.wpkg_path, "r") as zf:
+            try:
+                data = zf.read(event.image)
+            except KeyError:
+                return None
+        ext = event.image.rsplit(".", 1)[-1].lower()
+        media_type = _MIME_MAP.get(ext, "application/octet-stream")
+        return data, media_type
+
+    def get_lorebook_raw(self) -> dict:
+        """返回已解析的 lorebook 数据，供 LorebookQuery 使用。"""
+        return {
+            "characters": self.characters,
+            "locations": self.locations,
+            "items": self.items,
+            "knowledge": self.knowledge,
+        }

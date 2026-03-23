@@ -102,8 +102,7 @@ class GameEngine:
             protagonist_aliases=protagonist_aliases,
         )
 
-        lorebook_dir = worldpkg_path / "lorebook"
-        lorebook_query = LorebookQuery(lorebook_dir)
+        lorebook_query = LorebookQuery(parsed=self.world.get_lorebook_raw())
         lorebook_content = lorebook_query.to_lorebook_content()
 
         self.current_event_id: str | None = None
@@ -150,6 +149,9 @@ class GameEngine:
         self.agents.register("scene_adaptation", SceneAdaptationAgent(
             llm=self.llm,
         ))
+
+    def get_event_image(self, event_id: str) -> tuple[bytes, str] | None:
+        return self.world.get_event_image(event_id)
 
     def new_game(self, on_chunk=None) -> str:
         with self._lock:
@@ -261,7 +263,11 @@ class GameEngine:
         self.l1_summaries = [L1Summary.model_validate(s) for s in data["l1_summaries"]]
         self.agents.get("memory_compression").restore_save_state({"l1_counter": data["_l1_counter"]})
         self.previous_event_content = data.get("previous_event_content")
-        self._reentry_pending = data.get("_reentry_pending", False)
+        saved_reentry_pending = data.get("_reentry_pending", False)
+        # Bridge narrative already serves as the event's setup payload.
+        # Older saves may still persist the old "re-enter setup" flag, which
+        # would otherwise replay the same structural conflict loop forever.
+        self._reentry_pending = bool(saved_reentry_pending and not self.event_context.setup_narrative)
         self._current_adaptation_plan = data.get("_current_adaptation_plan")
         self.game_ended = data["game_ended"]
         self.delta_state = DeltaStateManager.from_dict(data["delta_state"])
@@ -463,8 +469,12 @@ class GameEngine:
                 new_intensity=evo.evolved_intensity,
             )
 
+        # Treat bridge_narrative as the event's setup payload instead of
+        # forcing a second setup pass. Re-running setup can loop forever when
+        # the planner's evolved Delta remains textually close to the old
+        # conflict, even though the bridge already moved the story forward.
         self.event_context.setup_narrative = bridge_result.bridge_narrative
-        self._reentry_pending = True
+        self._reentry_pending = False
 
         glog.log("GAME_STATE", {
             "action": "structural_conflict_bridge",
@@ -847,7 +857,7 @@ class GameEngine:
                     new_intensity=evo.evolved_intensity,
                 )
             self.event_context.setup_narrative = slot.bridge_data.bridge_narrative
-            self._reentry_pending = True
+            self._reentry_pending = False
 
             glog.log("GAME_STATE", {
                 "action": "structural_conflict_bridge",

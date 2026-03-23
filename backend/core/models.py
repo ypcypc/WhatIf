@@ -1,6 +1,6 @@
 from enum import Enum
 from typing import Literal, Optional
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
 
 class EventImportance(str, Enum):
@@ -109,6 +109,7 @@ class Event(BaseModel):
         description="叙事型事件的内容概括",
     )
     decision_text: str = Field(default="", description="事件级决策摘要")
+    image: str | None = Field(default=None, description="事件配图在 .wpkg 中的相对路径")
 
 
 class EventData(BaseModel):
@@ -131,6 +132,15 @@ class CharacterAppearance(BaseModel):
     physical: Optional[str] = Field(default=None, description="外貌描述")
     distinctive_features: Optional[list[str]] = Field(default=None, description="标志性特征")
     typical_attire: Optional[str] = Field(default=None, description="典型穿着")
+
+    @model_validator(mode='before')
+    @classmethod
+    def _coerce_attire(cls, data: dict) -> dict:
+        if isinstance(data, dict):
+            v = data.get('typical_attire')
+            if isinstance(v, list):
+                data['typical_attire'] = '、'.join(v)
+        return data
 
 
 class CharacterRelationship(BaseModel):

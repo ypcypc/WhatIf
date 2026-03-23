@@ -64,6 +64,10 @@
   · 物品的 from 是一个地点名而非角色名
   · from/to 值包含状态修饰词
 
+例外：from/to 为 null 时不算不一致。
+null 表示该字段引用的实体被 NecessityGrader 判定为不重要（necessary=false），
+已按 necessity_constraint 规则正确置空，无需修改。
+
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 错误类型 6：Granularity 误判（granularity_misjudge）
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -122,32 +126,32 @@
 
 【被审查的标注片段】
 
-事件 E008 (韩立攀爬炼骨崖):
+事件 E008 (A攀爬乙地):
   preconditions:
-    - {name: "韩立", type: "character", attribute: "地点", from: "七玄门", granularity: "named"}
-    - {name: "韩立的毅力", type: "item", attribute: "持有者", from: "韩立", granularity: "named"}
+    - {name: "A", type: "character", attribute: "地点", from: "甲组织", granularity: "named"}
+    - {name: "A的毅力", type: "item", attribute: "持有者", from: "A", granularity: "named"}
     - {name: "绳索", type: "item", attribute: "持有者", from: "师兄", granularity: "functional"}
   effects:
-    - {name: "韩立", type: "character", attribute: "地点", from: "七玄门", to: "炼骨崖", granularity: "named"}
-    - {name: "绳索", type: "item", attribute: "持有者", from: "师兄", to: "韩立", granularity: "functional"}
+    - {name: "A", type: "character", attribute: "地点", from: "甲组织", to: "乙地", granularity: "named"}
+    - {name: "绳索", type: "item", attribute: "持有者", from: "师兄", to: "A", granularity: "functional"}
 
-事件 E009 (韩立被分配为杂役弟子):
+事件 E009 (A被分配为杂役弟子):
   preconditions:
-    - {name: "韩立", type: "character", attribute: "地点", from: "七玄门", granularity: "named"}
+    - {name: "A", type: "character", attribute: "地点", from: "甲组织", granularity: "named"}
 
 【发现的错误】
 
 错误 1 — ability_leak:
-  "韩立的毅力"被标注为 item，持有者为"韩立"。
+  "A的毅力"被标注为 item，持有者为"A"。
   三句式测试：
-    "毅力由韩立持有"？ → 语义上勉强通，但"毅力"不是物品。
-    它是角色的内在属性/状态，无法从韩立身上"取走"或"交给别人"。
+    "毅力由A持有"？ → 语义上勉强通，但"毅力"不是物品。
+    它是角色的内在属性/状态，无法从A身上"取走"或"交给别人"。
   结论：这是能力/状态泄漏，应删除。
 
 错误 2 — continuity_break:
-  E008 的 effect 说"韩立从七玄门 → 炼骨崖"。
-  但 E009 的 precondition 说"韩立 from: 七玄门"。
-  这不一致——E009 应该是 from: "炼骨崖"（或从炼骨崖回到七玄门的中间有移动）。
+  E008 的 effect 说"A从甲组织 → 乙地"。
+  但 E009 的 precondition 说"A from: 甲组织"。
+  这不一致——E009 应该是 from: "乙地"（或从乙地回到甲组织的中间有移动）。
 
 【输出】
 {
@@ -157,10 +161,10 @@
       "errors": [
         {
           "type": "ability_leak",
-          "entity": "韩立的毅力",
+          "entity": "A的毅力",
           "evidence": "'毅力'是角色内在属性，无法转移或传递，不符合三句式测试",
           "description": "将角色能力/状态错误标注为物品实体",
-          "suggestion": "删除'韩立的毅力'的所有 precondition 和 effect 条目"
+          "suggestion": "删除'A的毅力'的所有 precondition 和 effect 条目"
         }
       ]
     },
@@ -169,10 +173,10 @@
       "errors": [
         {
           "type": "continuity_break",
-          "entity": "韩立",
-          "evidence": "E008 effect: 韩立 七玄门→炼骨崖，但 E009 precondition: 韩立 from 七玄门",
-          "description": "E008结束时韩立在炼骨崖，但E009开始时标注为七玄门，存在连续性断裂",
-          "suggestion": "将 E009 中韩立的 precondition.from 改为'炼骨崖'，或在两事件间补充韩立从炼骨崖回到七玄门的移动"
+          "entity": "A",
+          "evidence": "E008 effect: A 甲组织→乙地，但 E009 precondition: A from 甲组织",
+          "description": "E008结束时A在乙地，但E009开始时标注为甲组织，存在连续性断裂",
+          "suggestion": "将 E009 中A的 precondition.from 改为'乙地'，或在两事件间补充A从乙地回到甲组织的移动"
         }
       ]
     }
@@ -186,24 +190,24 @@
 
 【被审查的标注片段】
 
-事件 E015 (李飞宇告诉韩立墨大夫的秘密):
+事件 E015 (G告诉A E的秘密):
   preconditions:
-    - {name: "韩立", type: "character", attribute: "地点", from: "墨大夫的居所", granularity: "named"}
-    - {name: "墨大夫的秘密", type: "information", attribute: "知晓者", from: "李飞宇", granularity: "named"}
+    - {name: "A", type: "character", attribute: "地点", from: "E的住处", granularity: "named"}
+    - {name: "E的秘密", type: "information", attribute: "知晓者", from: "G", granularity: "named"}
   effects:
-    - {name: "墨大夫的秘密", type: "information", attribute: "知晓者", from: "李飞宇", to: "韩立", granularity: "named"}
+    - {name: "E的秘密", type: "information", attribute: "知晓者", from: "G", to: "A", granularity: "named"}
 
 【Entity Registry】
-角色: 韩立, 三叔, 韩父, 韩母, 墨大夫, 岳堂主, 李飞宇, 张铁, ...
-地点: 韩家村, 韩立家中, 青牛镇, 七玄门, 炼骨崖, 墨大夫的居所, ...
+角色: A, B, A的父亲, A的母亲, E, F, G, C, ...
+地点: A的村子, A的家中, 甲镇, 甲组织, 乙地, E的住处, ...
 
 【发现的错误】
 
 错误 — precondition_missing:
-  事件描述说"李飞宇告诉韩立秘密"——这是对话/信息传递。
+  事件描述说"G告诉A秘密"——这是对话/信息传递。
   规则：对话场景中，双方都必须在场。
-  但标注中缺少李飞宇的地点 precondition。
-  韩立在"墨大夫的居所"，李飞宇也应在同一地点。
+  但标注中缺少G的地点 precondition。
+  A在"E的住处"，G也应在同一地点。
 
 【输出】
 {
@@ -213,10 +217,10 @@
       "errors": [
         {
           "type": "precondition_missing",
-          "entity": "李飞宇",
-          "evidence": "事件涉及李飞宇向韩立传递信息，这是对话场景，双方必须在同一地点",
-          "description": "缺少李飞宇的地点 precondition，信息传递需要双方在场",
-          "suggestion": "添加 precondition: {name: '李飞宇', type: 'character', attribute: '地点', from: '墨大夫的居所', granularity: 'functional'}"
+          "entity": "G",
+          "evidence": "事件涉及G向A传递信息，这是对话场景，双方必须在同一地点",
+          "description": "缺少G的地点 precondition，信息传递需要双方在场",
+          "suggestion": "添加 precondition: {name: 'G', type: 'character', attribute: '地点', from: 'E的住处', granularity: 'functional'}"
         }
       ]
     }
@@ -230,31 +234,31 @@
 
 【被审查的标注片段】
 
-事件 E010 (墨大夫选中韩立):
+事件 E010 (E选中A):
   preconditions:
-    - {name: "韩立", type: "character", attribute: "地点", from: "七玄门", granularity: "named"}
-    - {name: "墨大夫", type: "character", attribute: "地点", from: "七玄门", granularity: "functional"}
-    - {name: "辨药手册", type: "item", attribute: "持有者", from: "墨大夫", granularity: "named"}
-    - {name: "张铁", type: "character", attribute: "地点", from: "七玄门", granularity: "named"}
+    - {name: "A", type: "character", attribute: "地点", from: "甲组织", granularity: "named"}
+    - {name: "E", type: "character", attribute: "地点", from: "甲组织", granularity: "functional"}
+    - {name: "辨药手册", type: "item", attribute: "持有者", from: "E", granularity: "named"}
+    - {name: "C", type: "character", attribute: "地点", from: "甲组织", granularity: "named"}
 
 【后续事件】
-E011: 韩立在墨大夫指导下用辨药手册学习辨药
-E012: 韩立用辨药手册中的知识辨认出一株稀有草药
-E016: 韩立暗中提防墨大夫
-E020: 韩立与墨大夫对峙
+E011: A在E指导下用辨药手册学习辨药
+E012: A用辨药手册中的知识辨认出一株稀有草药
+E016: A暗中提防E
+E020: A与E对峙
 
 【发现的错误】
 
 错误 1 — granularity_misjudge:
-  墨大夫标注为 functional，但：
-  前向扫描：E011, E012, E016, E020 全部按名字引用墨大夫。
+  E标注为 functional，但：
+  前向扫描：E011, E012, E016, E020 全部按名字引用E。
   引用率: 4/5 = 80% > 50%
-  墨大夫是持续出现的重要角色，应为 named。
+  E是持续出现的重要角色，应为 named。
 
 错误 2 — precondition_redundant:
-  张铁标注了 precondition，但 E010 的 goal 是"韩立被选为墨大夫的药童"。
-  反事实测试：如果张铁不在场，墨大夫仍可选中韩立。
-  张铁在此事件中只是围观，不参与 goal 达成。
+  C标注了 precondition，但 E010 的 goal 是"A被选为E的药童"。
+  反事实测试：如果C不在场，E仍可选中A。
+  C在此事件中只是围观，不参与 goal 达成。
 
 【输出】
 {
@@ -264,19 +268,19 @@ E020: 韩立与墨大夫对峙
       "errors": [
         {
           "type": "granularity_misjudge",
-          "entity": "墨大夫",
+          "entity": "E",
           "current_granularity": "functional",
           "suggested_granularity": "named",
-          "evidence": "墨大夫在E011, E012, E016, E020中均按名字被引用，引用率80%远超50%",
-          "description": "墨大夫是贯穿多个事件的关键角色，不应标注为functional",
-          "suggestion": "将墨大夫的 granularity 改为 named"
+          "evidence": "E在E011, E012, E016, E020中均按名字被引用，引用率80%远超50%",
+          "description": "E是贯穿多个事件的关键角色，不应标注为functional",
+          "suggestion": "将E的 granularity 改为 named"
         },
         {
           "type": "precondition_redundant",
-          "entity": "张铁",
-          "evidence": "E010的goal是'韩立被选为墨大夫的药童'，张铁不参与选拔过程",
-          "description": "张铁在此事件中只是旁观，去掉他的precondition不影响goal达成",
-          "suggestion": "删除张铁的 precondition 条目"
+          "entity": "C",
+          "evidence": "E010的goal是'A被选为E的药童'，C不参与选拔过程",
+          "description": "C在此事件中只是旁观，去掉他的precondition不影响goal达成",
+          "suggestion": "删除C的 precondition 条目"
         }
       ]
     }

@@ -1,5 +1,6 @@
 from pydantic import BaseModel
 
+import config
 from runtime.agents.base import BaseLLMCaller
 
 
@@ -51,4 +52,7 @@ class UnifiedWriter(BaseLLMCaller):
         if inp.phase_source:
             parts.append(f"<phase_source>\n{inp.phase_source}\n</phase_source>")
         parts.append(f"<writing_guidance>\n{inp.writing_guidance}\n</writing_guidance>")
+        lang_directive = config.get_output_lang_directive()
+        if lang_directive:
+            parts.append(lang_directive)
         return "\n\n".join(parts)

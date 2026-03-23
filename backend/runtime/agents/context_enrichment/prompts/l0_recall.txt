@@ -8,7 +8,7 @@
 q: "玩家选择了什么武器"
 a: {"selected_event_ids": ["event_005"]}
 
-q: "纳兰嫣然的态度变化"
+q: "B的态度变化"
 a: {"selected_event_ids": ["event_003", "event_015", "event_027"]}
 </examples>
 

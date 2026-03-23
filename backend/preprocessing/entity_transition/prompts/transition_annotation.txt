@@ -114,55 +114,55 @@ NecessityGrader 判定：
 【事件】
 {
   "event_id": "E003",
-  "decision_text": "三叔来访，韩立获七玄门入门机会",
-  "goal": "了解七玄门招收弟子的机会，并获得家人同意前往"
+  "decision_text": "B来访，A获甲组织入门机会",
+  "goal": "了解甲组织招收弟子的机会，并获得家人同意前往"
 }
 
 【必要实体集】
-characters: [{name: "韩立", granularity: "named"}, {name: "三叔", granularity: "functional"}, {name: "韩父", granularity: "functional"}]
-information: [{name: "七玄门招收弟子的消息", granularity: "named"}]
+characters: [{name: "A", granularity: "named"}, {name: "B", granularity: "functional"}, {name: "A的父亲", granularity: "functional"}]
+information: [{name: "甲组织招收弟子的消息", granularity: "named"}]
 
 【Entity Registry 参考】
-角色: 韩立, 三叔, 韩父, 韩母, 墨大夫, 岳堂主, ...
-地点: 韩家村, 韩立家中, 青牛镇, 七玄门, 炼骨崖, ...
+角色: A, B, A的父亲, A的母亲, E, F, ...
+地点: A的村子, A的家中, 甲镇, 甲组织, 乙地, ...
 
 【标注分析】
 
-韩立 (character → attribute: 地点):
-  事件开始前: 韩立在韩立家中（从山中归家）
-  事件结束后: 韩立仍在韩立家中（事件在家中发生，未移动）
+A (character → attribute: 地点):
+  事件开始前: A在A的家中（从山中归家）
+  事件结束后: A仍在A的家中（事件在家中发生，未移动）
   → 只有 precondition，无 effect
 
-三叔 (character → attribute: 地点):
-  事件开始前: 三叔来访，说明他从外面到达韩立家中
-  事件结束后: 三叔仍在韩立家中
-  → precondition: from = "韩立家中"（事件开始时他已到达）
+B (character → attribute: 地点):
+  事件开始前: B来访，说明他从外面到达A的家中
+  事件结束后: B仍在A的家中
+  → precondition: from = "A的家中"（事件开始时他已到达）
   → 无 effect（事件期间未移动）
 
-韩父 (character → attribute: 地点):
-  事件开始前: 韩父在家中
-  事件结束后: 韩父仍在家中
+A的父亲 (character → attribute: 地点):
+  事件开始前: A的父亲在家中
+  事件结束后: A的父亲仍在家中
   → 只有 precondition，无 effect
 
-七玄门招收弟子的消息 (information → attribute: 知晓者):
-  事件开始前: 只有三叔知道（from = "三叔"）
-  事件结束后: 韩立和韩父也知道了（信息扩散）
-  → precondition: from = "三叔"
-  → effect 1: from = "三叔", to = "韩立"（韩立新增为知晓者）
-  → effect 2: from = "三叔", to = "韩父"（韩父新增为知晓者）
+甲组织招收弟子的消息 (information → attribute: 知晓者):
+  事件开始前: 只有B知道（from = "B"）
+  事件结束后: A和A的父亲也知道了（信息扩散）
+  → precondition: from = "B"
+  → effect 1: from = "B", to = "A"（A新增为知晓者）
+  → effect 2: from = "B", to = "A的父亲"（A的父亲新增为知晓者）
 
 【输出】
 {
   "event_id": "E003",
   "preconditions": [
-    {"name": "韩立", "type": "character", "attribute": "地点", "from": "韩立家中", "granularity": "named"},
-    {"name": "三叔", "type": "character", "attribute": "地点", "from": "韩立家中", "granularity": "functional"},
-    {"name": "韩父", "type": "character", "attribute": "地点", "from": "韩立家中", "granularity": "functional"},
-    {"name": "七玄门招收弟子的消息", "type": "information", "attribute": "知晓者", "from": "三叔", "granularity": "named"}
+    {"name": "A", "type": "character", "attribute": "地点", "from": "A的家中", "granularity": "named"},
+    {"name": "B", "type": "character", "attribute": "地点", "from": "A的家中", "granularity": "functional"},
+    {"name": "A的父亲", "type": "character", "attribute": "地点", "from": "A的家中", "granularity": "functional"},
+    {"name": "甲组织招收弟子的消息", "type": "information", "attribute": "知晓者", "from": "B", "granularity": "named"}
   ],
   "effects": [
-    {"name": "七玄门招收弟子的消息", "type": "information", "attribute": "知晓者", "from": "三叔", "to": "韩立", "granularity": "named"},
-    {"name": "七玄门招收弟子的消息", "type": "information", "attribute": "知晓者", "from": "三叔", "to": "韩父", "granularity": "named"}
+    {"name": "甲组织招收弟子的消息", "type": "information", "attribute": "知晓者", "from": "B", "to": "A", "granularity": "named"},
+    {"name": "甲组织招收弟子的消息", "type": "information", "attribute": "知晓者", "from": "B", "to": "A的父亲", "granularity": "named"}
   ]
 }
 
@@ -174,35 +174,35 @@ information: [{name: "七玄门招收弟子的消息", granularity: "named"}]
 【事件】
 {
   "event_id": "E004",
-  "decision_text": "韩立与三叔赴青牛镇",
-  "goal": "抵达青牛镇，并在春香酒楼等待七玄门接引"
+  "decision_text": "A与B赴甲镇",
+  "goal": "抵达甲镇，并在酒楼等待甲组织接引"
 }
 
 【必要实体集】
-characters: [{name: "韩立", granularity: "named"}, {name: "三叔", granularity: "functional"}]
+characters: [{name: "A", granularity: "named"}, {name: "B", granularity: "functional"}]
 
 【标注分析】
 
-韩立 (character → attribute: 地点):
-  事件开始前: 韩立在韩立家中（E003 结束时的位置）
-  事件结束后: 韩立在青牛镇
+A (character → attribute: 地点):
+  事件开始前: A在A的家中（E003 结束时的位置）
+  事件结束后: A在甲镇
   → precondition + effect（位置改变）
 
-三叔 (character → attribute: 地点):
-  事件开始前: 三叔也在韩立家中
-  事件结束后: 三叔也到了青牛镇
+B (character → attribute: 地点):
+  事件开始前: B也在A的家中
+  事件结束后: B也到了甲镇
   → precondition + effect
 
 【输出】
 {
   "event_id": "E004",
   "preconditions": [
-    {"name": "韩立", "type": "character", "attribute": "地点", "from": "韩立家中", "granularity": "named"},
-    {"name": "三叔", "type": "character", "attribute": "地点", "from": "韩立家中", "granularity": "functional"}
+    {"name": "A", "type": "character", "attribute": "地点", "from": "A的家中", "granularity": "named"},
+    {"name": "B", "type": "character", "attribute": "地点", "from": "A的家中", "granularity": "functional"}
   ],
   "effects": [
-    {"name": "韩立", "type": "character", "attribute": "地点", "from": "韩立家中", "to": "青牛镇", "granularity": "named"},
-    {"name": "三叔", "type": "character", "attribute": "地点", "from": "韩立家中", "to": "青牛镇", "granularity": "functional"}
+    {"name": "A", "type": "character", "attribute": "地点", "from": "A的家中", "to": "甲镇", "granularity": "named"},
+    {"name": "B", "type": "character", "attribute": "地点", "from": "A的家中", "to": "甲镇", "granularity": "functional"}
   ]
 }
 
@@ -214,13 +214,13 @@ characters: [{name: "韩立", granularity: "named"}, {name: "三叔", granularit
 【事件】
 {
   "event_id": "E015",
-  "decision_text": "李飞宇告诉韩立墨大夫的真实身份",
-  "goal": "韩立得知墨大夫将弟子作为炼药鼎炉的秘密"
+  "decision_text": "G告诉A E的真实身份",
+  "goal": "A得知E将弟子作为炼药鼎炉的秘密"
 }
 
 【必要实体集】
-characters: [{name: "韩立", granularity: "named"}, {name: "李飞宇", granularity: "functional"}]
-information: [{name: "墨大夫的秘密", granularity: "named"}]
+characters: [{name: "A", granularity: "named"}, {name: "G", granularity: "functional"}]
+information: [{name: "E的秘密", granularity: "named"}]
 
 【说明：为何残缺功法书不在必要实体中？】
 在 necessity_grading 阶段，残缺功法书被判定为"不必要"——
@@ -229,37 +229,37 @@ information: [{name: "墨大夫的秘密", granularity: "named"}]
 
 【标注分析】
 
-韩立 (character → attribute: 地点):
-  事件开始前: 韩立在墨大夫的居所（假设此前他在此处）
-  事件结束后: 韩立仍在墨大夫的居所
+A (character → attribute: 地点):
+  事件开始前: A在E的住处（假设此前他在此处）
+  事件结束后: A仍在E的住处
   → 只有 precondition
 
-李飞宇 (character → attribute: 地点):
-  事件开始前: 李飞宇在墨大夫的居所
-  事件结束后: 李飞宇仍在墨大夫的居所（重伤未移动）
+G (character → attribute: 地点):
+  事件开始前: G在E的住处
+  事件结束后: G仍在E的住处（重伤未移动）
   → 只有 precondition
 
-墨大夫的秘密 (information → attribute: 知晓者):
-  事件开始前: 只有李飞宇知道（precondition: from = "李飞宇"）
-  事件结束后: 韩立也知道了（信息扩散，不是转移）
-  → precondition: from = "李飞宇"
-  → effect: from = "李飞宇", to = "韩立"
+E的秘密 (information → attribute: 知晓者):
+  事件开始前: 只有G知道（precondition: from = "G"）
+  事件结束后: A也知道了（信息扩散，不是转移）
+  → precondition: from = "G"
+  → effect: from = "G", to = "A"
 
   注意信息扩散规则：
-  李飞宇告诉韩立后，两人都知道这个秘密。
-  effect 的 from = "李飞宇" 表示信息来源，to = "韩立" 表示新增知晓者。
-  李飞宇并没有"忘记"这个秘密。
+  G告诉A后，两人都知道这个秘密。
+  effect 的 from = "G" 表示信息来源，to = "A" 表示新增知晓者。
+  G并没有"忘记"这个秘密。
 
 【输出】
 {
   "event_id": "E015",
   "preconditions": [
-    {"name": "韩立", "type": "character", "attribute": "地点", "from": "墨大夫的居所", "granularity": "named"},
-    {"name": "李飞宇", "type": "character", "attribute": "地点", "from": "墨大夫的居所", "granularity": "functional"},
-    {"name": "墨大夫的秘密", "type": "information", "attribute": "知晓者", "from": "李飞宇", "granularity": "named"}
+    {"name": "A", "type": "character", "attribute": "地点", "from": "E的住处", "granularity": "named"},
+    {"name": "G", "type": "character", "attribute": "地点", "from": "E的住处", "granularity": "functional"},
+    {"name": "E的秘密", "type": "information", "attribute": "知晓者", "from": "G", "granularity": "named"}
   ],
   "effects": [
-    {"name": "墨大夫的秘密", "type": "information", "attribute": "知晓者", "from": "李飞宇", "to": "韩立", "granularity": "named"}
+    {"name": "E的秘密", "type": "information", "attribute": "知晓者", "from": "G", "to": "A", "granularity": "named"}
   ]
 }
 
@@ -271,44 +271,44 @@ information: [{name: "墨大夫的秘密", granularity: "named"}]
 【事件】
 {
   "event_id": "E010",
-  "decision_text": "墨大夫选中韩立为药童，交给他一本辨药手册",
-  "goal": "韩立被选为墨大夫的药童，获得辨药手册开始学习"
+  "decision_text": "E选中A为药童，交给他一本辨药手册",
+  "goal": "A被选为E的药童，获得辨药手册开始学习"
 }
 
 【必要实体集】
-characters: [{name: "韩立", granularity: "named"}, {name: "墨大夫", granularity: "named"}]
+characters: [{name: "A", granularity: "named"}, {name: "E", granularity: "named"}]
 items: [{name: "辨药手册", granularity: "named"}]
 
 【标注分析】
 
-韩立 (character → attribute: 地点):
-  事件开始前: 韩立在七玄门
-  事件结束后: 韩立在墨大夫的居所（被带去了）
+A (character → attribute: 地点):
+  事件开始前: A在甲组织
+  事件结束后: A在E的住处（被带去了）
   → precondition + effect
 
-墨大夫 (character → attribute: 地点):
-  事件开始前: 墨大夫在七玄门（选人时在场）
-  事件结束后: 墨大夫在墨大夫的居所
+E (character → attribute: 地点):
+  事件开始前: E在甲组织（选人时在场）
+  事件结束后: E在E的住处
   → precondition + effect
 
 辨药手册 (item → attribute: 持有者):
-  事件开始前: 辨药手册由墨大夫持有
-  事件结束后: 辨药手册由韩立持有（墨大夫交给了韩立）
+  事件开始前: 辨药手册由E持有
+  事件结束后: 辨药手册由A持有（E交给了A）
   → precondition + effect
-  注意：物品是"转移"不是"扩散"——墨大夫不再持有。
+  注意：物品是"转移"不是"扩散"——E不再持有。
 
 【输出】
 {
   "event_id": "E010",
   "preconditions": [
-    {"name": "韩立", "type": "character", "attribute": "地点", "from": "七玄门", "granularity": "named"},
-    {"name": "墨大夫", "type": "character", "attribute": "地点", "from": "七玄门", "granularity": "named"},
-    {"name": "辨药手册", "type": "item", "attribute": "持有者", "from": "墨大夫", "granularity": "named"}
+    {"name": "A", "type": "character", "attribute": "地点", "from": "甲组织", "granularity": "named"},
+    {"name": "E", "type": "character", "attribute": "地点", "from": "甲组织", "granularity": "named"},
+    {"name": "辨药手册", "type": "item", "attribute": "持有者", "from": "E", "granularity": "named"}
   ],
   "effects": [
-    {"name": "韩立", "type": "character", "attribute": "地点", "from": "七玄门", "to": "墨大夫的居所", "granularity": "named"},
-    {"name": "墨大夫", "type": "character", "attribute": "地点", "from": "七玄门", "to": "墨大夫的居所", "granularity": "named"},
-    {"name": "辨药手册", "type": "item", "attribute": "持有者", "from": "墨大夫", "to": "韩立", "granularity": "named"}
+    {"name": "A", "type": "character", "attribute": "地点", "from": "甲组织", "to": "E的住处", "granularity": "named"},
+    {"name": "E", "type": "character", "attribute": "地点", "from": "甲组织", "to": "E的住处", "granularity": "named"},
+    {"name": "辨药手册", "type": "item", "attribute": "持有者", "from": "E", "to": "A", "granularity": "named"}
   ]
 }
 

@@ -4,8 +4,8 @@
 无匹配时：{"entity_ids": []}
 
 <examples>
-in: "韩立跟随三叔来到七玄门的山门前，远远看到墨大夫正在采药。"
-out: {"entity_ids": ["char_hanli", "char_sanshu", "char_modaifu", "loc_qixuanmen"]}
+in: "A跟随B来到甲组织的山门前，远远看到E正在采药。"
+out: {"entity_ids": ["char_a", "char_b", "char_e", "loc_org_a"]}
 
 in: "天色渐暗，远处传来几声犬吠。"
 out: {"entity_ids": []}

@@ -6,7 +6,7 @@
 输出格式：{"selected_l1_ids": [...], "selected_pending_ids": [...]}
 
 <examples>
-q: "玩家和药老的关系如何"
+q: "玩家和C的关系如何"
 a: {"selected_l1_ids": ["L1-001", "L1-003", "L1-005"], "selected_pending_ids": ["event_102"]}
 
 q: "最近发生了什么"

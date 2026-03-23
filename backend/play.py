@@ -8,13 +8,18 @@ from runtime.cli import GameCLI
 import config
 
 
-def _resolve_worldpkg_path(arg: str | None) -> Path:
+def _resolve_wpkg_path(arg: str | None) -> Path:
     if arg is None:
-        return config.OUTPUT_BASE
+        return config.OUTPUT_WPKG
 
     path = Path(arg)
     if path.exists():
         return path
+
+    if not path.suffix:
+        wpkg_path = config.OUTPUT_DIR / f"{arg}.wpkg"
+        if wpkg_path.exists():
+            return wpkg_path
 
     path = config.OUTPUT_DIR / arg
     if path.exists():
@@ -25,38 +30,27 @@ def _resolve_worldpkg_path(arg: str | None) -> Path:
 
 def main():
     arg = sys.argv[1] if len(sys.argv) > 1 else None
-    worldpkg_path = _resolve_worldpkg_path(arg)
+    wpkg_path = _resolve_wpkg_path(arg)
     saves_dir = config.SAVES_DIR
 
-    if not worldpkg_path.exists():
-        print(f"[错误] WorldPkg 不存在: {worldpkg_path}")
+    if not wpkg_path.exists():
+        print(f"[错误] WorldPkg 不存在: {wpkg_path}")
         print()
         if config.OUTPUT_DIR.exists():
-            available = [d.name for d in config.OUTPUT_DIR.iterdir() if d.is_dir()]
+            available = [f.stem for f in config.OUTPUT_DIR.iterdir() if f.suffix == ".wpkg"]
             if available:
                 print("可用的 WorldPkg:")
                 for name in available:
                     print(f"  python play.py {name}")
         print()
-        print("或运行 Phase 1 数据提取:")
+        print("或运行数据提取:")
         print("  python extract.py ../data/novels/小说.txt")
         sys.exit(1)
 
-    required_files = [
-        "metadata.json",
-        "events/events.json",
-        "lorebook/characters.json",
-    ]
-    for rel_path in required_files:
-        if not (worldpkg_path / rel_path).exists():
-            print(f"[错误] 缺少文件：{rel_path}")
-            print("请确保 WorldPkg 数据完整")
-            sys.exit(1)
-
-    print(f"[加载] {worldpkg_path.name}")
+    print(f"[加载] {wpkg_path.name}")
 
     try:
-        engine = GameEngine(worldpkg_path, saves_dir)
+        engine = GameEngine(wpkg_path, saves_dir)
 
         cli = GameCLI(engine)
         cli.run()

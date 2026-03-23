@@ -50,9 +50,37 @@ _PROVIDER_KEY_MAP = {
 PROJECT_ROOT = Path(__file__).parent
 REPO_ROOT = PROJECT_ROOT.parent
 OUTPUT_DIR = REPO_ROOT / "output"
-OUTPUT_BASE = OUTPUT_DIR / "龙族"
+OUTPUT_WORK_DIR = OUTPUT_DIR / "龙族"
+OUTPUT_WPKG = OUTPUT_DIR / "龙族.wpkg"
 CORE_PROMPTS_DIR = PROJECT_ROOT / "core" / "prompts"
 SAVES_DIR = REPO_ROOT / "saves"
+
+OUTPUT_LANGUAGE: str = "zh-CN"
+
+_OUTPUT_LANG_DIRECTIVES: dict[str, str] = {
+    "zh-CN": "",
+    "en": (
+        "\n\n[IMPORTANT OUTPUT LANGUAGE INSTRUCTION]\n"
+        "You MUST write ALL narrative output, dialogue, and descriptions in English.\n"
+        "Translate character names to their romanized pinyin forms.\n"
+        "Translate place names and terminology naturally into English.\n"
+        "Do NOT output any Chinese characters in the narrative."
+    ),
+}
+
+_TTS_VOICE_MAP: dict[str, str] = {
+    "zh-CN": "zh-CN-XiaoxiaoNeural",
+    "en": "en-US-AriaNeural",
+}
+
+
+def get_output_lang_directive() -> str:
+    return _OUTPUT_LANG_DIRECTIVES.get(OUTPUT_LANGUAGE, "")
+
+
+def get_default_tts_voice() -> str:
+    return _TTS_VOICE_MAP.get(OUTPUT_LANGUAGE, "zh-CN-XiaoxiaoNeural")
+
 
 SESSION_LOG_ENABLED = True
 SESSION_LOG_DIR = REPO_ROOT / "logs" / "sessions"
@@ -102,8 +130,13 @@ def _validate_api_keys(configs: dict[str, LLMConfig]) -> None:
                 raise ValueError(f"环境变量 {env_var} 未设置（模型 {cfg.model} 需要）")
 
 
-_LLM_CONFIGS = _load_llm_configs()
-_validate_api_keys(_LLM_CONFIGS)
+_LLM_CONFIGS: dict[str, LLMConfig] | None = None
+
+
+def _ensure_loaded():
+    global _LLM_CONFIGS
+    if _LLM_CONFIGS is None:
+        _LLM_CONFIGS = _load_llm_configs()
 
 
 def class_to_config_name(class_name: str) -> str:
@@ -111,9 +144,45 @@ def class_to_config_name(class_name: str) -> str:
 
 
 def get_llm_config(name: str) -> LLMConfig:
+    _ensure_loaded()
     if name not in _LLM_CONFIGS:
         raise KeyError(f"LLM 配置 '{name}' 未在 llm_config.yaml 中定义")
     return _LLM_CONFIGS[name]
+
+
+def get_all_llm_configs() -> dict[str, LLMConfig]:
+    _ensure_loaded()
+    return _LLM_CONFIGS
+
+
+def reload_llm_configs(raw: dict) -> None:
+    global _LLM_CONFIGS
+    configs: dict[str, LLMConfig] = {}
+    for section in ("extractors", "agents"):
+        for name, params in raw.get(section, {}).items():
+            configs[name] = LLMConfig(**params)
+    missing = _REQUIRED_KEYS - configs.keys()
+    if missing:
+        raise ValueError(f"缺少必需配置: {missing}")
+    _LLM_CONFIGS = configs
+    _save_llm_configs_to_yaml(raw)
+
+
+def _save_llm_configs_to_yaml(raw: dict) -> None:
+    config_path = PROJECT_ROOT / "llm_config.yaml"
+    with open(config_path, "w", encoding="utf-8") as f:
+        yaml.dump(raw, f, default_flow_style=False, allow_unicode=True, sort_keys=False)
+
+
+def set_api_key(provider: str, key: str) -> None:
+    env_var = _PROVIDER_KEY_MAP.get(provider)
+    if not env_var:
+        raise ValueError(f"未知 provider: {provider}")
+    os.environ[env_var] = key
+
+
+def get_provider_status() -> dict[str, bool]:
+    return {provider: bool(os.getenv(env_var)) for provider, env_var in _PROVIDER_KEY_MAP.items()}
 
 
 @dataclass(frozen=True)

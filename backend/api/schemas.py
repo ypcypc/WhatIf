@@ -15,8 +15,9 @@ class EventInfo(CamelModel):
     id: str
     decision_text: str
     goal: str
-    importance: str                                 
-    type: str                               
+    importance: str
+    type: str
+    has_image: bool = False                               
 
 
 class GameStateResponse(CamelModel):

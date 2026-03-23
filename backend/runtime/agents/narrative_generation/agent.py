@@ -44,6 +44,7 @@ class NarrativeGenerationAgent(BaseAgent):
 
         self._phase_prompts: dict[PhaseType, tuple[str, str]] = {}
         self._loop_configs: dict[PhaseType, LoopConfig] = {}
+        self._setup_bridge_sections = load_sections(_PROMPTS_DIR / "setup_bridge_sections.txt")
 
         shared = load_sections(_PROMPTS_DIR / "orchestrator_shared.txt")
         for phase, pc in PHASE_CONFIGS.items():
@@ -81,6 +82,7 @@ class NarrativeGenerationAgent(BaseAgent):
         delta_ctx = self._agent_executor.get("delta_lifecycle").execute(context, state)
 
         system_prompt, input_template = self._phase_prompts[phase]
+        system_prompt = self._resolve_system_prompt(phase, system_prompt, state)
         history_text = format_confrontation_history(
             context.event_context.confrontation_history,
         )
@@ -169,7 +171,7 @@ class NarrativeGenerationAgent(BaseAgent):
         elif phase == PhaseType.RESOLUTION:
             awaiting_input, phase_complete = False, True
         else:
-            no_deviation = deviation_analysis is None and context.player_input
+            no_deviation = deviation_analysis is None and bool(context.player_input)
             awaiting_input = not no_deviation
             phase_complete = no_deviation
 
@@ -223,6 +225,11 @@ class NarrativeGenerationAgent(BaseAgent):
             return result.tool_result
 
         if tool_call.name == "request_bridge":
+            if not state.delta_state.get_active_deltas():
+                return ToolResult(
+                    tool_name="request_bridge_blocked",
+                    content="<bridge_blocked reason=\"no_active_deltas\"/>",
+                )
             with captured_lock:
                 captured["bridge_conflicts"] = tool_call.arguments.get("conflicts", [])
             return ToolResult(tool_name="request_bridge", content="<bridge_requested/>")
@@ -325,6 +332,30 @@ class NarrativeGenerationAgent(BaseAgent):
             "player_input": context.player_input,
             "phase_source": context.phase_source,
         })
+
+    def _resolve_system_prompt(
+        self,
+        phase: PhaseType,
+        system_prompt: str,
+        state: GameState,
+    ) -> str:
+        if phase != PhaseType.SETUP:
+            return system_prompt
+
+        has_active_deltas = bool(state.delta_state.get_active_deltas())
+        sections = self._setup_bridge_sections if has_active_deltas else {
+            "bridge_tool": "",
+            "bridge_principles": "",
+            "bridge_output_note": "",
+        }
+        rendered = (
+            system_prompt
+            .replace("{bridge_tool}", sections["bridge_tool"])
+            .replace("{bridge_principles}", sections["bridge_principles"])
+            .replace("{bridge_output_note}", sections["bridge_output_note"])
+        )
+        assert "{bridge_" not in rendered, "SETUP prompt bridge placeholders were not resolved"
+        return rendered
 
 
 _PROMPTS_DIR = Path(__file__).parent / "orchestrator" / "prompts"

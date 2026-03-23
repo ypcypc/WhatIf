@@ -7,25 +7,37 @@ import config
 
 class LorebookQuery:
 
-    def __init__(self, lorebook_dir: Path | None = None):
-        self.lorebook_dir = lorebook_dir or (config.OUTPUT_BASE / "lorebook")
+    def __init__(self, *, parsed: dict | None = None, lorebook_dir: Path | None = None):
         self._index: dict[str, dict[str, Any]] = {}
-        self._load()
+        if parsed:
+            self._load_from_parsed(parsed)
+        elif lorebook_dir:
+            self._load_from_dir(lorebook_dir)
+        else:
+            raise ValueError("LorebookQuery requires either parsed data or lorebook_dir")
 
-    def _load(self) -> None:
-        characters_file = self.lorebook_dir / "characters.json"
+    def _load_from_parsed(self, parsed: dict) -> None:
+        for char in parsed["characters"].characters:
+            self._index[char.id] = {"type": "character", "data": char.model_dump()}
+        for loc in parsed["locations"].locations:
+            self._index[loc.id] = {"type": "location", "data": loc.model_dump()}
+        for item in parsed["items"].items:
+            self._index[item.id] = {"type": "item", "data": item.model_dump()}
+
+    def _load_from_dir(self, lorebook_dir: Path) -> None:
+        characters_file = lorebook_dir / "characters.json"
         if characters_file.exists():
             data = json.loads(characters_file.read_text(encoding="utf-8"))
             for char in data.get("characters", []):
                 self._index[char["id"]] = {"type": "character", "data": char}
 
-        locations_file = self.lorebook_dir / "locations.json"
+        locations_file = lorebook_dir / "locations.json"
         if locations_file.exists():
             data = json.loads(locations_file.read_text(encoding="utf-8"))
             for loc in data.get("locations", []):
                 self._index[loc["id"]] = {"type": "location", "data": loc}
 
-        items_file = self.lorebook_dir / "items.json"
+        items_file = lorebook_dir / "items.json"
         if items_file.exists():
             data = json.loads(items_file.read_text(encoding="utf-8"))
             for item in data.get("items", []):

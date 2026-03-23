@@ -54,13 +54,13 @@
 {
   "event_id": "E008",
   "preconditions": [
-    {"name": "韩立", "type": "character", "attribute": "地点", "from": "七玄门", "granularity": "named"},
-    {"name": "韩立的毅力", "type": "item", "attribute": "持有者", "from": "韩立", "granularity": "named"},
+    {"name": "A", "type": "character", "attribute": "地点", "from": "甲组织", "granularity": "named"},
+    {"name": "A的毅力", "type": "item", "attribute": "持有者", "from": "A", "granularity": "named"},
     {"name": "绳索", "type": "item", "attribute": "持有者", "from": "师兄", "granularity": "functional"}
   ],
   "effects": [
-    {"name": "韩立", "type": "character", "attribute": "地点", "from": "七玄门", "to": "炼骨崖", "granularity": "named"},
-    {"name": "绳索", "type": "item", "attribute": "持有者", "from": "师兄", "to": "韩立", "granularity": "functional"}
+    {"name": "A", "type": "character", "attribute": "地点", "from": "甲组织", "to": "乙地", "granularity": "named"},
+    {"name": "绳索", "type": "item", "attribute": "持有者", "from": "师兄", "to": "A", "granularity": "functional"}
   ]
 }
 
@@ -68,7 +68,7 @@
 {
   "event_id": "E009",
   "preconditions": [
-    {"name": "韩立", "type": "character", "attribute": "地点", "from": "七玄门", "granularity": "named"}
+    {"name": "A", "type": "character", "attribute": "地点", "from": "甲组织", "granularity": "named"}
   ],
   "effects": []
 }
@@ -81,9 +81,9 @@
       "errors": [
         {
           "type": "ability_leak",
-          "entity": "韩立的毅力",
+          "entity": "A的毅力",
           "description": "将角色能力/状态错误标注为物品实体",
-          "suggestion": "删除'韩立的毅力'的所有 precondition 和 effect 条目"
+          "suggestion": "删除'A的毅力'的所有 precondition 和 effect 条目"
         }
       ]
     },
@@ -92,9 +92,9 @@
       "errors": [
         {
           "type": "continuity_break",
-          "entity": "韩立",
-          "description": "E008结束时韩立在炼骨崖，但E009开始时标注为七玄门",
-          "suggestion": "将 E009 中韩立的 precondition.from 改为'炼骨崖'"
+          "entity": "A",
+          "description": "E008结束时A在乙地，但E009开始时标注为甲组织",
+          "suggestion": "将 E009 中A的 precondition.from 改为'乙地'"
         }
       ]
     }
@@ -104,14 +104,14 @@
 【修正过程】
 
 E008 — ability_leak 修正：
-  规则1: 删除"韩立的毅力"的所有条目。
-  从 preconditions 中删除 {"name": "韩立的毅力", ...}。
+  规则1: 删除"A的毅力"的所有条目。
+  从 preconditions 中删除 {"name": "A的毅力", ...}。
   effects 中无该实体，无需额外操作。
 
 E009 — continuity_break 修正：
   规则2: 修正 from 值使其与前一事件一致。
-  E008 effect: 韩立 → 炼骨崖。
-  将 E009 precondition 中韩立的 from 从"七玄门"改为"炼骨崖"。
+  E008 effect: A → 乙地。
+  将 E009 precondition 中A的 from 从"甲组织"改为"乙地"。
 
 【修正后输出】
 {
@@ -119,18 +119,18 @@ E009 — continuity_break 修正：
     {
       "event_id": "E008",
       "preconditions": [
-        {"name": "韩立", "type": "character", "attribute": "地点", "from": "七玄门", "granularity": "named"},
+        {"name": "A", "type": "character", "attribute": "地点", "from": "甲组织", "granularity": "named"},
         {"name": "绳索", "type": "item", "attribute": "持有者", "from": "师兄", "granularity": "functional"}
       ],
       "effects": [
-        {"name": "韩立", "type": "character", "attribute": "地点", "from": "七玄门", "to": "炼骨崖", "granularity": "named"},
-        {"name": "绳索", "type": "item", "attribute": "持有者", "from": "师兄", "to": "韩立", "granularity": "functional"}
+        {"name": "A", "type": "character", "attribute": "地点", "from": "甲组织", "to": "乙地", "granularity": "named"},
+        {"name": "绳索", "type": "item", "attribute": "持有者", "from": "师兄", "to": "A", "granularity": "functional"}
       ]
     },
     {
       "event_id": "E009",
       "preconditions": [
-        {"name": "韩立", "type": "character", "attribute": "地点", "from": "炼骨崖", "granularity": "named"}
+        {"name": "A", "type": "character", "attribute": "地点", "from": "乙地", "granularity": "named"}
       ],
       "effects": []
     }
@@ -148,15 +148,15 @@ E009 — continuity_break 修正：
 {
   "event_id": "E010",
   "preconditions": [
-    {"name": "韩立", "type": "character", "attribute": "地点", "from": "七玄门", "granularity": "named"},
-    {"name": "墨大夫", "type": "character", "attribute": "地点", "from": "七玄门", "granularity": "functional"},
-    {"name": "辨药手册", "type": "item", "attribute": "持有者", "from": "墨大夫", "granularity": "named"},
-    {"name": "张铁", "type": "character", "attribute": "地点", "from": "七玄门", "granularity": "named"}
+    {"name": "A", "type": "character", "attribute": "地点", "from": "甲组织", "granularity": "named"},
+    {"name": "E", "type": "character", "attribute": "地点", "from": "甲组织", "granularity": "functional"},
+    {"name": "辨药手册", "type": "item", "attribute": "持有者", "from": "E", "granularity": "named"},
+    {"name": "C", "type": "character", "attribute": "地点", "from": "甲组织", "granularity": "named"}
   ],
   "effects": [
-    {"name": "韩立", "type": "character", "attribute": "地点", "from": "七玄门", "to": "墨大夫的居所", "granularity": "named"},
-    {"name": "墨大夫", "type": "character", "attribute": "地点", "from": "七玄门", "to": "墨大夫的居所", "granularity": "functional"},
-    {"name": "辨药手册", "type": "item", "attribute": "持有者", "from": "墨大夫", "to": "韩立", "granularity": "named"}
+    {"name": "A", "type": "character", "attribute": "地点", "from": "甲组织", "to": "E的住处", "granularity": "named"},
+    {"name": "E", "type": "character", "attribute": "地点", "from": "甲组织", "to": "E的住处", "granularity": "functional"},
+    {"name": "辨药手册", "type": "item", "attribute": "持有者", "from": "E", "to": "A", "granularity": "named"}
   ]
 }
 
@@ -164,11 +164,11 @@ E009 — continuity_break 修正：
 {
   "event_id": "E015",
   "preconditions": [
-    {"name": "韩立", "type": "character", "attribute": "地点", "from": "墨大夫的居所", "granularity": "named"},
-    {"name": "墨大夫的秘密", "type": "information", "attribute": "知晓者", "from": "李飞宇", "granularity": "named"}
+    {"name": "A", "type": "character", "attribute": "地点", "from": "E的住处", "granularity": "named"},
+    {"name": "E的秘密", "type": "information", "attribute": "知晓者", "from": "G", "granularity": "named"}
   ],
   "effects": [
-    {"name": "墨大夫的秘密", "type": "information", "attribute": "知晓者", "from": "李飞宇", "to": "韩立", "granularity": "named"}
+    {"name": "E的秘密", "type": "information", "attribute": "知晓者", "from": "G", "to": "A", "granularity": "named"}
   ]
 }
 
@@ -180,17 +180,17 @@ E009 — continuity_break 修正：
       "errors": [
         {
           "type": "granularity_misjudge",
-          "entity": "墨大夫",
+          "entity": "E",
           "current_granularity": "functional",
           "suggested_granularity": "named",
-          "description": "墨大夫是贯穿多个事件的关键角色",
-          "suggestion": "将墨大夫的 granularity 改为 named"
+          "description": "E是贯穿多个事件的关键角色",
+          "suggestion": "将E的 granularity 改为 named"
         },
         {
           "type": "precondition_redundant",
-          "entity": "张铁",
-          "description": "张铁在此事件中只是旁观",
-          "suggestion": "删除张铁的 precondition 条目"
+          "entity": "C",
+          "description": "C在此事件中只是旁观",
+          "suggestion": "删除C的 precondition 条目"
         }
       ]
     },
@@ -199,9 +199,9 @@ E009 — continuity_break 修正：
       "errors": [
         {
           "type": "precondition_missing",
-          "entity": "李飞宇",
-          "description": "缺少李飞宇的地点precondition",
-          "suggestion": "添加 precondition: {name: '李飞宇', type: 'character', attribute: '地点', from: '墨大夫的居所', granularity: 'functional'}"
+          "entity": "G",
+          "description": "缺少G的地点precondition",
+          "suggestion": "添加 precondition: {name: 'G', type: 'character', attribute: '地点', from: 'E的住处', granularity: 'functional'}"
         }
       ]
     }
@@ -212,15 +212,15 @@ E009 — continuity_break 修正：
 
 E010 — granularity_misjudge 修正：
   规则6: 只改 granularity 字段，不动其他字段。
-  将墨大夫在 preconditions 和 effects 中的 granularity 全部从"functional"改为"named"。
+  将E在 preconditions 和 effects 中的 granularity 全部从"functional"改为"named"。
 
 E010 — precondition_redundant 修正：
-  规则4: 从 preconditions 中删除张铁。
-  检查 effects 中是否有张铁 → 没有，无需额外操作。
+  规则4: 从 preconditions 中删除C。
+  检查 effects 中是否有C → 没有，无需额外操作。
 
 E015 — precondition_missing 修正：
   规则3: 根据 suggestion 添加遗漏的 precondition。
-  添加李飞宇的地点 precondition，granularity 采用 suggestion 中的值"functional"。
+  添加G的地点 precondition，granularity 采用 suggestion 中的值"functional"。
 
 【修正后输出】
 {
@@ -228,25 +228,25 @@ E015 — precondition_missing 修正：
     {
       "event_id": "E010",
       "preconditions": [
-        {"name": "韩立", "type": "character", "attribute": "地点", "from": "七玄门", "granularity": "named"},
-        {"name": "墨大夫", "type": "character", "attribute": "地点", "from": "七玄门", "granularity": "named"},
-        {"name": "辨药手册", "type": "item", "attribute": "持有者", "from": "墨大夫", "granularity": "named"}
+        {"name": "A", "type": "character", "attribute": "地点", "from": "甲组织", "granularity": "named"},
+        {"name": "E", "type": "character", "attribute": "地点", "from": "甲组织", "granularity": "named"},
+        {"name": "辨药手册", "type": "item", "attribute": "持有者", "from": "E", "granularity": "named"}
       ],
       "effects": [
-        {"name": "韩立", "type": "character", "attribute": "地点", "from": "七玄门", "to": "墨大夫的居所", "granularity": "named"},
-        {"name": "墨大夫", "type": "character", "attribute": "地点", "from": "七玄门", "to": "墨大夫的居所", "granularity": "named"},
-        {"name": "辨药手册", "type": "item", "attribute": "持有者", "from": "墨大夫", "to": "韩立", "granularity": "named"}
+        {"name": "A", "type": "character", "attribute": "地点", "from": "甲组织", "to": "E的住处", "granularity": "named"},
+        {"name": "E", "type": "character", "attribute": "地点", "from": "甲组织", "to": "E的住处", "granularity": "named"},
+        {"name": "辨药手册", "type": "item", "attribute": "持有者", "from": "E", "to": "A", "granularity": "named"}
       ]
     },
     {
       "event_id": "E015",
       "preconditions": [
-        {"name": "韩立", "type": "character", "attribute": "地点", "from": "墨大夫的居所", "granularity": "named"},
-        {"name": "李飞宇", "type": "character", "attribute": "地点", "from": "墨大夫的居所", "granularity": "functional"},
-        {"name": "墨大夫的秘密", "type": "information", "attribute": "知晓者", "from": "李飞宇", "granularity": "named"}
+        {"name": "A", "type": "character", "attribute": "地点", "from": "E的住处", "granularity": "named"},
+        {"name": "G", "type": "character", "attribute": "地点", "from": "E的住处", "granularity": "functional"},
+        {"name": "E的秘密", "type": "information", "attribute": "知晓者", "from": "G", "granularity": "named"}
       ],
       "effects": [
-        {"name": "墨大夫的秘密", "type": "information", "attribute": "知晓者", "from": "李飞宇", "to": "韩立", "granularity": "named"}
+        {"name": "E的秘密", "type": "information", "attribute": "知晓者", "from": "G", "to": "A", "granularity": "named"}
       ]
     }
   ]

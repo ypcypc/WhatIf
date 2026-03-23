@@ -1,5 +1,6 @@
 import json
 import sys
+import zipfile
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Callable, Type
@@ -91,7 +92,7 @@ def _all_decision_texts_present(events: EventData) -> bool:
 
 def main(input_path: str, output_dir: str | None = None):
     input_file = Path(input_path)
-    output_path = Path(output_dir) if output_dir else config.OUTPUT_BASE / input_file.stem
+    output_path = Path(output_dir) if output_dir else config.OUTPUT_WORK_DIR
 
     if not input_file.exists():
         raise FileNotFoundError(f"输入文件不存在: {input_path}")
@@ -234,7 +235,53 @@ def main(input_path: str, output_dir: str | None = None):
     save_json(metadata, metadata_file)
     print("  - 元信息已生成")
 
-    print(f"\n[完成] WorldPkg 已生成到: {output_path}")
+    print("\n[打包] 生成 .wpkg 数据包...")
+    wpkg_file = output_path.with_suffix(".wpkg")
+    pack_worldpkg(output_path, wpkg_file)
+    print(f"\n[完成] WorldPkg 已打包: {wpkg_file}")
+
+
+_IMAGE_EXTS = {".webp", ".png", ".jpg", ".jpeg"}
+_SKIP_DIRS = {"debug", "__pycache__"}
+_SKIP_FILES = {".DS_Store", "Thumbs.db", ".lorebook_done"}
+
+
+def pack_worldpkg(src_dir: Path, dst_file: Path) -> None:
+    """将工作目录打包为 .wpkg，自动关联图片到 events。"""
+    images_dir = src_dir / "images"
+    image_map: dict[str, str] = {}
+    if images_dir.is_dir():
+        for img_file in images_dir.iterdir():
+            if img_file.is_file() and img_file.suffix.lower() in _IMAGE_EXTS:
+                image_map[img_file.stem] = f"images/{img_file.name}"
+
+    events_path = src_dir / "events" / "events.json"
+    events_data = json.loads(events_path.read_text(encoding="utf-8"))
+    for event in events_data.get("events", []):
+        if event["id"] in image_map:
+            event["image"] = image_map[event["id"]]
+
+    with zipfile.ZipFile(dst_file, "w", zipfile.ZIP_DEFLATED) as zf:
+        zf.writestr("events/events.json", json.dumps(events_data, ensure_ascii=False, indent=2))
+
+        for file_path in src_dir.rglob("*"):
+            if not file_path.is_file():
+                continue
+            rel = file_path.relative_to(src_dir).as_posix()
+            if any(rel.startswith(skip + "/") or rel == skip for skip in _SKIP_DIRS):
+                continue
+            if file_path.name in _SKIP_FILES:
+                continue
+            if rel == "events/events.json":
+                continue
+            if rel.startswith("images/") and file_path.suffix.lower() not in _IMAGE_EXTS:
+                continue
+            zf.write(file_path, rel)
+
+    matched = len(image_map)
+    total_events = len(events_data.get("events", []))
+    print(f"  - 图片关联: {matched}/{total_events} 个事件")
+    print(f"  - 文件大小: {dst_file.stat().st_size / 1024:.1f} KB")
 
 
 def _run_stage3(

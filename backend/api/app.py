@@ -2,6 +2,8 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from api.routes import extraction, game
+from api.routes.config import router as config_router
+from api.routes.voice import router as voice_router
 
 app = FastAPI(
     title="WhatIf API",
@@ -10,7 +12,7 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -18,6 +20,8 @@ app.add_middleware(
 
 app.include_router(game.router)
 app.include_router(extraction.router)
+app.include_router(config_router)
+app.include_router(voice_router)
 
 
 @app.get("/api/health")
