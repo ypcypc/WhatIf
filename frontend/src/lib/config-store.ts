@@ -5,6 +5,8 @@ export interface LlmSlotConfig {
   model: string
   temperature: number
   thinking_budget: number
+  api_base?: string
+  api_key_env?: string
 }
 
 export interface LlmConfigMap {

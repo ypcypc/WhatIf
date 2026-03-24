@@ -40,6 +40,8 @@ def get_llm_config_all():
             "model": cfg.model,
             "temperature": cfg.temperature,
             "thinking_budget": cfg.thinking_budget,
+            "api_base": cfg.api_base,
+            "api_key_env": cfg.api_key_env,
         }
     return result
 

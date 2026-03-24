@@ -104,6 +104,8 @@
     "extractors": "小说数据提取 Agents",
     "agents": "叙事 Agents",
     "model": "模型",
+    "apiBase": "OpenAI 兼容 Base URL",
+    "apiBasePlaceholder": "留空使用官方地址，例如：https://api.openai.com/v1",
     "temperature": "温度",
     "thinkingBudget": "思考预算",
     "presetFlash": "全部 Flash",
