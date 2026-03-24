@@ -104,6 +104,8 @@
     "extractors": "Novel Extraction Agents",
     "agents": "Narrative Agents",
     "model": "Model",
+    "apiBase": "OpenAI-Compatible Base URL",
+    "apiBasePlaceholder": "Leave empty for default, e.g. https://api.openai.com/v1",
     "temperature": "Temperature",
     "thinkingBudget": "Thinking Budget",
     "presetFlash": "All Flash",
