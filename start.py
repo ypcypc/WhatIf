@@ -6,6 +6,7 @@ import subprocess
 import sys
 import time
 from pathlib import Path
+from typing import Sequence
 from urllib.error import URLError
 from urllib.request import urlopen
 
@@ -96,14 +97,30 @@ def find_python() -> str:
     return sys.executable
 
 
-def find_pnpm() -> str:
-    """定位 pnpm 可执行文件。"""
+def find_pnpm_command() -> list[str]:
+    """定位 pnpm 命令，兼容全局安装和 Corepack 托管的 pnpm。"""
     candidates = ["pnpm.cmd", "pnpm.exe", "pnpm"] if IS_WINDOWS else ["pnpm"]
     for candidate in candidates:
         resolved = shutil.which(candidate)
         if resolved:
-            return resolved
-    raise FileNotFoundError("未找到 pnpm，请先安装 pnpm 并确保它在 PATH 中。")
+            return [resolved]
+
+    corepack_candidates = ["corepack.cmd", "corepack.exe", "corepack"] if IS_WINDOWS else ["corepack"]
+    for candidate in corepack_candidates:
+        resolved = shutil.which(candidate)
+        if resolved:
+            return [resolved, "pnpm"]
+
+    raise FileNotFoundError("未找到 pnpm 或 corepack，请先安装 pnpm，或启用 Node.js 自带的 Corepack。")
+
+
+def describe_command(command: Sequence[str]) -> str:
+    return " ".join(command)
+
+
+def find_pnpm() -> str:
+    """Backward-compatible string form of the resolved pnpm command."""
+    return describe_command(find_pnpm_command())
 
 
 def start_backend(python: str) -> subprocess.Popen:
@@ -116,9 +133,9 @@ def start_backend(python: str) -> subprocess.Popen:
     )
 
 
-def start_frontend(pnpm: str) -> subprocess.Popen:
+def start_frontend(pnpm_command: Sequence[str]) -> subprocess.Popen:
     return subprocess.Popen(
-        [pnpm, "dev", "--port", str(FRONTEND_PORT)],
+        [*pnpm_command, "dev", "--port", str(FRONTEND_PORT)],
         cwd=ROOT / "frontend",
     )
 
@@ -176,14 +193,14 @@ def main() -> None:
 
     # 2) 启动服务
     python = find_python()
-    pnpm = find_pnpm()
+    pnpm_command = find_pnpm_command()
     print(f"\n[2/3] 启动后端 (Python: {python})...")
     backend = start_backend(python)
     wait_for_http(BACKEND_HEALTH_URL, timeout_s=30, label="后端")
     print(f"  后端已就绪: {BACKEND_HEALTH_URL}")
 
-    print(f"\n[3/3] 启动前端 (pnpm: {pnpm})...")
-    frontend = start_frontend(pnpm)
+    print(f"\n[3/3] 启动前端 (pnpm: {describe_command(pnpm_command)})...")
+    frontend = start_frontend(pnpm_command)
     wait_for_http(FRONTEND_URL, timeout_s=30, label="前端")
     print(f"  前端已就绪: {FRONTEND_URL}")
 
