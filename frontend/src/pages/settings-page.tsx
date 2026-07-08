@@ -255,6 +255,16 @@ function ModelConfigTab() {
                   className="api-input w-full"
                   style={{ padding: '6px 10px', fontSize: '12px' }}
                 />
+                <div>
+                  <span className="text-[10px] block mb-0.5" style={{ color: 'var(--color-text-2)' }}>{t('settings.apiBase')}</span>
+                  <input
+                    value={slot.api_base ?? ''}
+                    onChange={e => updateSlot(section, name, 'api_base', e.target.value)}
+                    placeholder={t('settings.apiBasePlaceholder')}
+                    className="api-input w-full"
+                    style={{ padding: '6px 10px', fontSize: '12px' }}
+                  />
+                </div>
                 <div className="flex gap-3">
                   <div className="flex-1">
                     <span className="text-[10px] block mb-0.5" style={{ color: 'var(--color-text-2)' }}>{t('settings.temperature')}</span>
